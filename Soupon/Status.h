@@ -9,7 +9,7 @@
 #ifndef Soupon_Status_h
 #define Soupon_Status_h
 
-#define HOTLIST @"http://www.sltouch.com/soupon/hot.aspx?begin=%@&max=%@"
+#define HOTLIST @"http://www.sltouch.com/soupon/hotlist.aspx?city=1&begin=1&max=10"
 #define GETIMAGE @"http://www.sltouch.com/soupon/upload/"
 #define SEARCHLIST @"http://www.sltouch.com/soupon/couponlist.aspx?category=%@&brand=%@&district=%@&begin=%@&max=%@"
 #define KEYSEARCH @"http://www.sltouch.com/soupon/match.aspx?object=%@&keyword=%@"

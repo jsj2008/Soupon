@@ -39,6 +39,7 @@
 		66C6A78D16EEF731009A9E83 /* SPCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 66C6A78C16EEF731009A9E83 /* SPCell.m */; };
 		66C6A79116EEF79B009A9E83 /* ViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 66C6A79016EEF79B009A9E83 /* ViewCell.xib */; };
 		66C6A79316EF2C98009A9E83 /* detail_image_bg.gif in Resources */ = {isa = PBXBuildFile; fileRef = 66C6A79216EF2C98009A9E83 /* detail_image_bg.gif */; };
+		66C6A7A516EF683E009A9E83 /* SPHotData.m in Sources */ = {isa = PBXBuildFile; fileRef = 66C6A7A416EF683E009A9E83 /* SPHotData.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -95,6 +96,8 @@
 		66C6A78C16EEF731009A9E83 /* SPCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCell.m; sourceTree = "<group>"; };
 		66C6A79016EEF79B009A9E83 /* ViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewCell.xib; sourceTree = "<group>"; };
 		66C6A79216EF2C98009A9E83 /* detail_image_bg.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = detail_image_bg.gif; sourceTree = "<group>"; };
+		66C6A7A316EF683E009A9E83 /* SPHotData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHotData.h; sourceTree = "<group>"; };
+		66C6A7A416EF683E009A9E83 /* SPHotData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHotData.m; sourceTree = "<group>"; };
 		66FE9F0116EE061800841919 /* NSDataAdditions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSDataAdditions.h; sourceTree = "<group>"; };
 		66FE9F0216EE061800841919 /* NSDataAdditions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSDataAdditions.m; sourceTree = "<group>"; };
 		66FE9F0416EE066900841919 /* TBXML.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TBXML.h; sourceTree = "<group>"; };
@@ -195,6 +198,8 @@
 				660BF64016EE9E8C000FCC5F /* SPAdsData.m */,
 				660BF64616EEA0D8000FCC5F /* SPCityData.h */,
 				660BF64716EEA0D8000FCC5F /* SPCityData.m */,
+				66C6A7A316EF683E009A9E83 /* SPHotData.h */,
+				66C6A7A416EF683E009A9E83 /* SPHotData.m */,
 			);
 			name = Common;
 			sourceTree = "<group>";
@@ -356,6 +361,7 @@
 				660BF64116EE9E8C000FCC5F /* SPAdsData.m in Sources */,
 				660BF64816EEA0D8000FCC5F /* SPCityData.m in Sources */,
 				66C6A78D16EEF731009A9E83 /* SPCell.m in Sources */,
+				66C6A7A516EF683E009A9E83 /* SPHotData.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

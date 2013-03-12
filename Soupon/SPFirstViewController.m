@@ -51,24 +51,30 @@
 	manager = [SDWebImageManager sharedManager];
 	adsArray = [[NSMutableArray alloc]init];
 	cityArray = [[NSMutableArray alloc]init];
-	NSURL *adsURL = [NSURL URLWithString:ADS];
-	NSURL *cityListURL = [NSURL URLWithString:GETCITYS];
+	NSURL *hotURL = [NSURL URLWithString:HOTLIST];
 
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *string =  [NSString stringWithContentsOfURL:cityListURL usedEncoding:&encode error:nil];
-	NSLog(@"city:%@",string);
-	NSXMLParser *parser = [[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:adsURL]];
+	NSString *string =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
+	NSLog(@"hotlist:%@",string);
+	//[SPCommon parserXML:string type:xHotlist];
+	NSXMLParser *parser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:ADS]]]autorelease];
 	[parser setShouldProcessNamespaces:NO];
 	[parser setShouldReportNamespacePrefixes:NO];
 	[parser setShouldResolveExternalEntities:NO];
 	[parser setDelegate:self];
 	[parser parse];
-	NSXMLParser *cityParser = [[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:cityListURL]];
+	NSXMLParser *cityParser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:GETCITYS]]]autorelease];
 	[cityParser setShouldProcessNamespaces:NO];
 	[cityParser setShouldReportNamespacePrefixes:NO];
 	[cityParser setShouldResolveExternalEntities:NO];
 	[cityParser setDelegate:self];
 	[cityParser parse];
+	NSXMLParser *hotParser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:hotURL]]autorelease];
+	[hotParser setShouldProcessNamespaces:NO];
+	[hotParser setShouldReportNamespacePrefixes:NO];
+	[hotParser setShouldResolveExternalEntities:NO];
+	[hotParser setDelegate:self];
+	[hotParser parse];
 	
 	leftItem = [[UIBarButtonItem alloc]initWithTitle:[citys objectAtIndex:0] style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked)];
 

@@ -10,8 +10,8 @@
 #import "TBXML.h"
 #import "Status.h"
 
-@interface SPCommon : NSObject <NSXMLParserDelegate>{
-	id<NSXMLParserDelegate> delegate;
+@interface SPCommon : NSObject{
+
 }
 
 +(NSMutableArray*)parserXML:(NSString *)dataString type:(ParserType)type;
