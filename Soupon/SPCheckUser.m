@@ -9,5 +9,5 @@
 #import "SPCheckUser.h"
 
 @implementation SPCheckUser
-
+@synthesize s_description,s_result;
 @end

@@ -54,7 +54,7 @@
 	NSURL *hotURL = [NSURL URLWithString:HOTLIST];
 
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *string =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
+	NSString *string =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SHOWINFO] usedEncoding:&encode error:nil];
 	NSLog(@"hotlist:%@",string);
 	//[SPCommon parserXML:string type:xHotlist];
 	NSXMLParser *parser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:ADS]]]autorelease];
@@ -173,7 +173,7 @@
 }
 
 - ( void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image { 
-	
+	[SDWebImageManager sharedManager];
 }
 
 #pragma marked TabelViewDelegate

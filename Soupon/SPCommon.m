@@ -10,6 +10,9 @@
 #import "SPCityData.h"
 #import "SPAdsData.h"
 #import "SPHotData.h"
+#import "SPShowInfo.h"
+#import "SPAroundInfo.h"
+#import "SPCheckUser.h"
 
 @implementation SPCommon
 
@@ -17,7 +20,7 @@
 	if (!dataString) {
 		return nil;
 	}
-	NSMutableArray *dataArray = [[NSMutableArray alloc]init];
+	NSMutableArray *dataArray = [[[NSMutableArray alloc]init]autorelease];
 	TBXML *tbXml = [TBXML tbxmlWithXMLString:dataString];
     TBXMLElement * root = tbXml.rootXMLElement;
 	if (type == xHotlist) {
@@ -36,9 +39,6 @@
 		    [hot release];
 		}
 		
-	}
-	if (type == xGetImage) {
-		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
 	}
 	if (type == xSearchlist) {
 		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
@@ -60,31 +60,60 @@
 	}
 	
 	if (type == xCheckuser) {
-		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
+		TBXMLElement *registers = [TBXML childElementNamed:@"register" parentElement:root];
+		while (registers!=nil) {
+            SPCheckUser *check = [[SPCheckUser alloc] init];
+            check.s_result = [TBXML valueOfAttributeNamed:@"result" forElement:registers];
+            check.s_description = [TBXML valueOfAttributeNamed:@"description" forElement:registers];
+			
+			[dataArray addObject:check];
+		    [check release];
+		}
+		
 	}
 	if (type ==xSearcharound ) {
-		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
+		TBXMLElement *node = [TBXML childElementNamed:@"node" parentElement:root];
+        while (node!=nil) {
+            SPAroundInfo *around = [[SPAroundInfo alloc] init];
+            around.s_id = [TBXML valueOfAttributeNamed:@"id" forElement:node];
+            around.s_caption = [TBXML valueOfAttributeNamed:@"caption" forElement:node];
+            around.s_description = [TBXML valueOfAttributeNamed:@"description" forElement:node];
+            around.s_icon = [TBXML valueOfAttributeNamed:@"icon" forElement:node];
+            around.s_distance = [TBXML valueOfAttributeNamed:@"distance" forElement:node];
+			around.s_address = [TBXML valueOfAttributeNamed:@"address" forElement:node];
+            node = [TBXML nextSiblingNamed:@"node" searchFromElement:node];
+			
+			[dataArray addObject:around];
+		    [around release];
+		}
+
 	}
 	if (type == xShowinfo) {
-		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
+		TBXMLElement *showinfo = [TBXML childElementNamed:@"detail" parentElement:root];
+		while (showinfo!=nil) {
+			SPShowInfo *data = [[SPShowInfo alloc]init];
+			data.s_caption =[TBXML valueOfAttributeNamed:@"caption" forElement:showinfo];
+			data.s_content = [TBXML valueOfAttributeNamed:@"content" forElement:showinfo];
+			data.s_indate = [TBXML valueOfAttributeNamed:@"indate" forElement:showinfo];
+			[dataArray addObject:data];
+			[data release];
+			//showinfo = [TBXML nextSiblingNamed:@"ad" searchFromElement:ads];
+		}
 	}
 	if (type == xAds) {
 		TBXMLElement *ads = [TBXML childElementNamed:@"ad" parentElement:root];
 
-		
+		while (ads!=nil) {
 			SPAdsData *data = [[SPAdsData alloc]init];
-
-			
-			data.s_adID =[TBXML valueOfAttributeNamed:@"ad" forElement:ads];
-		
-			//data.s_adName = [TBXML textForElement:adposter];
-			//data.s_adURL = [TBXML textForElement:adurl];
+			data.s_adID =[TBXML valueOfAttributeNamed:@"id" forElement:ads];
+			data.s_adName = [TBXML valueOfAttributeNamed:@"poster" forElement:ads];
+			data.s_adURL = [TBXML valueOfAttributeNamed:@"url" forElement:ads];
 			[dataArray addObject:data];
-		    [data release];
+			[data release];
 			ads = [TBXML nextSiblingNamed:@"ad" searchFromElement:ads];
-		
+		}
 	}
-	return nil;
+	return dataArray;
 }
 
 @end

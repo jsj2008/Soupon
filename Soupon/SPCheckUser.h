@@ -9,5 +9,6 @@
 #import <Foundation/Foundation.h>
 
 @interface SPCheckUser : NSObject
-
+@property (nonatomic, retain) NSString *s_result;
+@property (nonatomic, retain) NSString *s_description;
 @end

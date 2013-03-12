@@ -10,10 +10,10 @@
 
 @interface SPHotData : NSObject
 
-@property (nonatomic, copy) NSString *s_hotid;
-@property (nonatomic, copy) NSString *s_caption;
-@property (nonatomic, copy) NSString *s_description;
-@property (nonatomic, copy) NSString *s_icon;
-@property (nonatomic, copy) NSString *s_popularrity;
+@property (nonatomic, retain) NSString *s_hotid;
+@property (nonatomic, retain) NSString *s_caption;
+@property (nonatomic, retain) NSString *s_description;
+@property (nonatomic, retain) NSString *s_icon;
+@property (nonatomic, retain) NSString *s_popularrity;
 
 @end

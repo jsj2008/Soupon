@@ -15,7 +15,7 @@
 #define KEYSEARCH @"http://www.sltouch.com/soupon/match.aspx?object=%@&keyword=%@"
 #define GETCITYS @"http://www.sltouch.com/soupon/citylist.aspx"
 #define CHECKUSER @"http://www.sltouch.com/soupon/register.aspx?action=%@&phone=%@&password=%@&email=%@"
-#define SEARCHAROUNG @"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=%@&max=%@"
+#define SEARCHAROUND @"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=%@&max=%@"
 #define SHOWINFO @"http://www.sltouch.com/soupon/detail.aspx?couponid=%@"
 #define ADS @"http://www.sltouch.com/soupon/adbanner.aspx"
 

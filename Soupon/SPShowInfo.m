@@ -9,5 +9,5 @@
 #import "SPShowInfo.h"
 
 @implementation SPShowInfo
-
+@synthesize s_indate,s_caption,s_content;
 @end
