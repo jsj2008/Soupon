@@ -12,16 +12,22 @@
 #import "SPCityData.h"
 #import "SDWebImageManager.h"
 #import "UIImageView+WebCache.h"
+#import "HJObjManager.h"
+#import "HJManagedImageV.h"
+#import "PullToRefreshTableView.h"
 
 @interface SPFirstViewController : UIViewController <PagePhotosDataSource,NSXMLParserDelegate,SDWebImageManagerDelegate,UITableViewDataSource,UITableViewDelegate>
 {
 	SDWebImageManager *manager;
 	UIBarButtonItem *leftItem;
+	NSArray *hotArray;
+	NSArray *adsArray;
+	HJObjManager* objMan;
 }
-@property (strong ,nonatomic) UITableView *tabelView;
+@property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPAdsData *adsData;
 @property (nonatomic ,retain) SPCityData *cityData;
-@property (nonatomic, retain) NSMutableArray *adsArray;
+
 @property (nonatomic, retain) NSMutableArray *cityArray;
 @property (nonatomic, retain) NSMutableArray *citys;
 @end

@@ -14,6 +14,6 @@
 
 }
 
-+(NSMutableArray*)parserXML:(NSString *)dataString type:(ParserType)type;
-
++ (NSMutableArray *)parserXML:(NSString *)dataString type:(ParserType)type;
++ (NSMutableArray *)parserKeySearchXML:(NSString *)dataString type:(KeySearchType)type;
 @end

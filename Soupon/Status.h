@@ -24,13 +24,17 @@ typedef enum{
 	xHotlist = 0,
     xGetImage = 1,
 	xSearchlist = 2,
-	xKeysearch = 3,
-	xGetcitys = 4,
-	xCheckuser = 5,
-	xSearcharound = 6,
-	xShowinfo = 7,
-	xAds = 8,
+	xGetcitys = 3,
+	xCheckuser = 4,
+	xSearcharound = 5,
+	xShowinfo = 6,
+	xAds = 7,
 }ParserType;
 
+typedef enum{
+	xCategory = 0,
+    xBrand = 1,
+	xDistrict = 2,
+}KeySearchType;
 
 #endif

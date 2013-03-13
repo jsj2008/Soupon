@@ -7,11 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SPHotData.h"
+#import "SDWebImageManager.h"
+#import "UIImageView+WebCache.h"
+@interface SPCell : UITableViewCell<SDWebImageManagerDelegate>{
+	UILabel *nameLabel;
+	UITextView *contentTextView;
+	UILabel *downNumLabel;
+	UIImageView *tImageView;
+	SDWebImageManager *manager;
+}
 
-@interface SPCell : UITableViewCell
-
-@property (strong ,nonatomic) IBOutlet UIView *viewCell;
-@property (retain, nonatomic) IBOutlet UIImageView *bigImageView;
-@property (retain, nonatomic) IBOutlet UILabel *nameLabel;
-
+- (void)setHotData:(SPHotData *)data;
 @end

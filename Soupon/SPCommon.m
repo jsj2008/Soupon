@@ -23,16 +23,15 @@
 	NSMutableArray *dataArray = [[[NSMutableArray alloc]init]autorelease];
 	TBXML *tbXml = [TBXML tbxmlWithXMLString:dataString];
     TBXMLElement * root = tbXml.rootXMLElement;
-	if (type == xHotlist) {
+	if (type == xHotlist||type ==xSearchlist) {
 		TBXMLElement *coupon = [TBXML childElementNamed:@"coupon" parentElement:root];
         while (coupon!=nil) {
-            
             SPHotData *hot = [[SPHotData alloc] init];
             hot.s_hotid = [TBXML valueOfAttributeNamed:@"id" forElement:coupon];
             hot.s_caption = [TBXML valueOfAttributeNamed:@"caption" forElement:coupon];
             hot.s_description = [TBXML valueOfAttributeNamed:@"description" forElement:coupon];
             hot.s_icon = [TBXML valueOfAttributeNamed:@"icon" forElement:coupon];
-            hot.s_popularrity = [TBXML valueOfAttributeNamed:@"popularity" forElement:coupon];
+            hot.s_popularity = [TBXML valueOfAttributeNamed:@"popularity" forElement:coupon];
             coupon = [TBXML nextSiblingNamed:@"coupon" searchFromElement:coupon];
 			
 			[dataArray addObject:hot];
@@ -40,12 +39,7 @@
 		}
 		
 	}
-	if (type == xSearchlist) {
-		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
-	}
-	if (type == xKeysearch) {
-		TBXMLElement *hotlist = [TBXML childElementNamed:@"info" parentElement:root];
-	}
+	
 	if (type == xGetcitys) {
 		TBXMLElement *city = [TBXML childElementNamed:@"city" parentElement:root];
 		while (city != nil) {
@@ -102,17 +96,31 @@
 	}
 	if (type == xAds) {
 		TBXMLElement *ads = [TBXML childElementNamed:@"ad" parentElement:root];
-
 		while (ads!=nil) {
 			SPAdsData *data = [[SPAdsData alloc]init];
 			data.s_adID =[TBXML valueOfAttributeNamed:@"id" forElement:ads];
 			data.s_adName = [TBXML valueOfAttributeNamed:@"poster" forElement:ads];
 			data.s_adURL = [TBXML valueOfAttributeNamed:@"url" forElement:ads];
+			ads = [TBXML nextSiblingNamed:@"ad" searchFromElement:ads];
 			[dataArray addObject:data];
 			[data release];
-			ads = [TBXML nextSiblingNamed:@"ad" searchFromElement:ads];
 		}
 	}
+	return dataArray;
+}
+
++ (NSMutableArray *)parserKeySearchXML:(NSString *)dataString type:(KeySearchType)type{
+	NSMutableArray *dataArray = [[[NSMutableArray alloc]init]autorelease];
+	TBXML *tbXml = [TBXML tbxmlWithXMLString:dataString];
+    TBXMLElement * root = tbXml.rootXMLElement;
+	if (type == xCategory) {
+		TBXMLElement *category = [TBXML childElementNamed:@"category" parentElement:root];
+        while (category!=nil) {
+            
+		}
+		
+	}
+
 	return dataArray;
 }
 

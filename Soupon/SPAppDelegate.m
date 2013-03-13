@@ -40,6 +40,7 @@
 	UIViewController *viewController4 = [[[SPFourthViewController alloc] initWithNibName:@"SPFourthViewController" bundle:nil] autorelease];
 	
 	self.tabBarController = [[[UITabBarController alloc] init] autorelease];
+	self.tabBarController.tabBar.selectedImageTintColor = [UIColor redColor];
 	self.navController = [[[UINavigationController alloc] initWithRootViewController:self.tabBarController]autorelease];
 	self.tabBarController.viewControllers = [NSArray arrayWithObjects:viewController1, viewController2, viewController3,viewController4,nil];
 	self.navController.navigationBar.tintColor = [UIColor colorWithRed:150.00f/255.0f green:0 blue:0 alpha:1];

@@ -10,18 +10,17 @@
 #import "Status.h"
 #import "SPCommon.h"
 #import "SPCell.h"
-
-
 @interface SPFirstViewController ()
 
 @end
 
 @implementation SPFirstViewController
-@synthesize adsData, cityData, adsArray, cityArray, citys, tabelView;
+@synthesize adsData, cityData,  cityArray, citys, tabelView;
 -(void)dealloc{
 	[adsArray release];
 	[cityArray release];
 	[leftItem release];
+	[objMan release];
 	[super dealloc];
 }
 
@@ -38,45 +37,53 @@
 - (void)viewWillAppear:(BOOL)animated{
 	[self.tabBarController.navigationItem setRightBarButtonItem:nil];
 	[self.tabBarController.navigationItem setLeftBarButtonItem:leftItem];
-	self.tabBarController.title = @"热门优惠";
+	self.tabBarController.title = @"环旗优惠";
 }
 							
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	tabelView  = [[UITableView alloc]initWithFrame:CGRectMake(0, 150, 320, 218)];
+
+	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
+	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"] ;
+	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
+	objMan.fileCache = fileCache;
+	
+	// Have the file cache trim itself down to a size & age limit, so it doesn't grow forever
+	fileCache.fileCountLimit = 100;
+	fileCache.fileAgeLimit = 60*60*24*7; //1 week
+	[fileCache trimCacheUsingBackgroundThread];
+	
+	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 150, 320, 218)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
 	[self.view addSubview:tabelView];
 	manager = [SDWebImageManager sharedManager];
-	adsArray = [[NSMutableArray alloc]init];
 	cityArray = [[NSMutableArray alloc]init];
-	NSURL *hotURL = [NSURL URLWithString:HOTLIST];
-
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *string =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SHOWINFO] usedEncoding:&encode error:nil];
-	NSLog(@"hotlist:%@",string);
-	//[SPCommon parserXML:string type:xHotlist];
-	NSXMLParser *parser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:ADS]]]autorelease];
-	[parser setShouldProcessNamespaces:NO];
-	[parser setShouldReportNamespacePrefixes:NO];
-	[parser setShouldResolveExternalEntities:NO];
-	[parser setDelegate:self];
-	[parser parse];
-	NSXMLParser *cityParser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:GETCITYS]]]autorelease];
-	[cityParser setShouldProcessNamespaces:NO];
-	[cityParser setShouldReportNamespacePrefixes:NO];
-	[cityParser setShouldResolveExternalEntities:NO];
-	[cityParser setDelegate:self];
-	[cityParser parse];
-	NSXMLParser *hotParser = [[[NSXMLParser alloc] initWithData:[NSData dataWithContentsOfURL:hotURL]]autorelease];
-	[hotParser setShouldProcessNamespaces:NO];
-	[hotParser setShouldReportNamespacePrefixes:NO];
-	[hotParser setShouldResolveExternalEntities:NO];
-	[hotParser setDelegate:self];
-	[hotParser parse];
+	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
+	NSLog(@"ddd:%@",hotstring);
+	NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
+	NSLog(@"Adslist:%@",adsString);
+	if (![hotstring isEqualToString:@""]) {
+		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
+	}else {
+		NSLog(@"error");
+	}
+	if (![adsString isEqualToString:@""]) {
+		adsArray = [[SPCommon parserXML:adsString type:xAds]copy];
+	}else {
+		NSLog(@"error");
+	}
 	
-	leftItem = [[UIBarButtonItem alloc]initWithTitle:[citys objectAtIndex:0] style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked)];
+
+
+	
+
+	NSString *citysString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:GETCITYS] usedEncoding:&encode error:nil];
+	NSArray *a = [[SPCommon parserXML:citysString type:xGetcitys]copy];
+	SPCityData *b = (SPCityData*)[a objectAtIndex:0];
+	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked)];
 
 	PagePhotosView *pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,150) withDataSource:self];
     [self.view addSubview:pagePhotosView];
@@ -122,71 +129,86 @@
 	
 }
 
-
-- (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
-
-{	
-	if ([elementName isEqualToString:@"abbanner"]||[elementName isEqualToString:@"ad"]) {
-		adsData = [[SPAdsData alloc]init];
-		for (NSString *s in attributeDict) {
-			if ([s isEqualToString:@"id"]) {
-				adsData.s_adID = [attributeDict objectForKey:s];			
-			}
-			if ([s isEqualToString:@"url"]) {
-				adsData.s_adURL = [attributeDict objectForKey:s];
-			}
-			if ([s isEqualToString:@"poster"]) {
-				adsData.s_adName= [attributeDict objectForKey:s];
-			}
-		}
-		[adsArray addObject:adsData];
-		[adsData release];
-	}else if ([elementName isEqualToString:@"citylist"]||[elementName isEqualToString:@"city"]) {
-		cityData = [[SPCityData alloc]init];
-		citys = [[NSMutableArray alloc]init];
-		for (NSString *s in attributeDict) {
-			if ([s isEqualToString:@"id"]) {
-				cityData.s_cityID = [attributeDict objectForKey:s];
-				
-			}
-			if ([s isEqualToString:@"caption"]) {
-				cityData.s_cityCaption = [attributeDict objectForKey:s];NSLog(@"ssss:%@",cityData.s_cityCaption);
-				[citys addObject:cityData.s_cityCaption];
-			}
-		}
-		[cityArray addObject:adsData];
-		[cityData release];
-	}
-}
-
-- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
-
-{
-	
-	NSLog(@"Value:%@",string);
-	
-}
-
-- (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
-
-{
-}
-
-- ( void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image { 
+- (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image { 
 	[SDWebImageManager sharedManager];
 }
+
+
+- (void)updateThread:(NSString *)returnKey{
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    sleep(2);
+    switch ([returnKey intValue]) {
+        case k_RETURN_REFRESH:
+
+            break;
+            
+        case k_RETURN_LOADMORE:
+
+            break;
+            
+        default:
+            break;
+    }
+    [self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:NO];
+    [pool release];
+}
+
+- (void)updateTableView{
+    if (5) {
+        //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
+        [tabelView reloadData:NO];
+    } else {
+        //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
+        [tabelView reloadData:YES];
+    }
+}
+
+
+
 
 #pragma marked TabelViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 }
 
 - (NSInteger )tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-	return 5;
+	return [hotArray count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-	SPCell *cell = [[[SPCell alloc]init]autorelease];
+	
+	HJManagedImageV* mi;
+	SPCell *cell = (SPCell *)[tableView dequeueReusableCellWithIdentifier:@"SPCell"];
+	if (!cell) {
+		cell = [[[SPCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SPCell"]autorelease];
+		mi = [[[HJManagedImageV alloc] initWithFrame:CGRectMake(1,-1,65,70)] autorelease];
+		mi.tag = 999;
+		[cell addSubview:mi];
+		
+	}
+	else {
+		//Get a reference to the managed image view that was already in the recycled cell, and clear it
+		mi = (HJManagedImageV*)[cell viewWithTag:999];
+		[mi clear];
+	}
+	SPHotData *h = [[SPHotData alloc]init];
+	h = (SPHotData*)[hotArray objectAtIndex:indexPath.row];
+	[cell setHotData:h];
+	cell.selectionStyle = UITableViewCellSelectionStyleGray;
+	
+	//set the URL that we want the managed image view to load
+	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,h.s_icon];
+	urlStirng = [urlStirng stringByAddingPercentEscapesUsingEncoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
+	mi.url = [NSURL URLWithString:urlStirng];
+	
+	//tell the object manager to manage the managed image view, 
+	//this causes the cached image to display, or the image to be loaded, cached, and displayed
+	[objMan manage:mi];
 	return cell;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath  
+{  
+    return 70;
 }
 
 

@@ -9,5 +9,5 @@
 #import "SPHotData.h"
 
 @implementation SPHotData
-@synthesize s_hotid,s_caption,s_description,s_icon,s_popularrity;
+@synthesize s_hotid,s_caption,s_description,s_icon,s_popularity;
 @end
