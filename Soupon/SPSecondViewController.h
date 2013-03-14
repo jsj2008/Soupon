@@ -7,9 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
-
-@interface SPSecondViewController : UIViewController{
+#import "HJObjManager.h"
+#import "HJManagedImageV.h"
+#import "PullToRefreshTableView.h"
+#import "SPCityData.h"
+@interface SPSecondViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
 	UIBarButtonItem *rightItem;
+	NSArray *searchArray;
+	HJObjManager* objMan;
 }
+@property (strong ,nonatomic) PullToRefreshTableView *tabelView;
+@property (nonatomic ,retain) SPCityData *cityData;
 
 @end

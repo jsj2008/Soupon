@@ -7,16 +7,16 @@
 //
 
 #import "SPThirdViewController.h"
-
+#import "Status.h"
 @interface SPThirdViewController ()
 
 @end
 
 @implementation SPThirdViewController
-
+@synthesize tabelView,cityData;
 - (void)dealloc{
-	
-	
+	[tabelView release];
+	[cityData release];
 	[rightItem release];
 	[super dealloc];
 }
@@ -39,9 +39,33 @@
 
 - (void)viewDidLoad
 {
+	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
+	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"] ;
+	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
+	objMan.fileCache = fileCache;
+	
+	// Have the file cache trim itself down to a size & age limit, so it doesn't grow forever
+	fileCache.fileCountLimit = 100;
+	fileCache.fileAgeLimit = 60*60*24*7; //1 week
+	[fileCache trimCacheUsingBackgroundThread];
+	
+	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, 320, 367)];
+	tabelView.dataSource = self;
+	tabelView.delegate = self;
+	[self.view addSubview:tabelView];
+	
+	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SEARCHAROUND] usedEncoding:&encode error:nil];
+	NSLog(@"ho,%@",hotstring);
+	if (![hotstring isEqualToString:@""]) {
+		aroundArray = [[SPCommon parserXML:hotstring type:xSearcharound]copy];
+	}else {
+		NSLog(@"error");
+	}
+	
 	rightItem = [[UIBarButtonItem alloc]initWithTitle:@"刷新" style:UIBarButtonItemStyleDone target:self action:@selector(rightItemClicked)];
 	[self.tabBarController.navigationItem setRightBarButtonItem:rightItem];
-	self.tabBarController.title = @"周边优惠";
+	
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
@@ -60,5 +84,84 @@
 {
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
+
+- (void)updateThread:(NSString *)returnKey{
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    sleep(2);
+    switch ([returnKey intValue]) {
+        case k_RETURN_REFRESH:
+			
+            break;
+            
+        case k_RETURN_LOADMORE:
+			
+            break;
+            
+        default:
+            break;
+    }
+    [self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:NO];
+    [pool release];
+}
+
+- (void)updateTableView{
+    if (5) {
+        //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
+        [tabelView reloadData:NO];
+    } else {
+        //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
+        [tabelView reloadData:YES];
+    }
+}
+
+
+
+
+#pragma marked TabelViewDelegate
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+}
+
+- (NSInteger )tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+	return [aroundArray count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+	
+	HJManagedImageV* mi;
+	SPCell *cell = (SPCell *)[tableView dequeueReusableCellWithIdentifier:@"SPCell"];
+	if (!cell) {
+		cell = [[[SPCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SPCell"]autorelease];
+		mi = [[[HJManagedImageV alloc] initWithFrame:CGRectMake(2,1.5,65,70)] autorelease];
+		mi.tag = 999;
+		[cell addSubview:mi];
+		
+	}
+	else {
+		//Get a reference to the managed image view that was already in the recycled cell, and clear it
+		mi = (HJManagedImageV*)[cell viewWithTag:999];
+		[mi clear];
+	}
+	SPAroundInfo *h = [[SPAroundInfo alloc]init];
+	h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
+	[cell setAroundData:h];
+	cell.selectionStyle = UITableViewCellSelectionStyleGray;
+	
+	//set the URL that we want the managed image view to load
+	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,h.s_icon];
+	urlStirng = [urlStirng stringByAddingPercentEscapesUsingEncoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000)];
+	mi.url = [NSURL URLWithString:urlStirng];
+	
+	//tell the object manager to manage the managed image view, 
+	//this causes the cached image to display, or the image to be loaded, cached, and displayed
+	[objMan manage:mi];
+	return cell;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath  
+{  
+    return 75;
+}
+
+
 
 @end

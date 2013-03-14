@@ -21,6 +21,7 @@
 	[cityArray release];
 	[leftItem release];
 	[objMan release];
+	[tabelView release];
 	[super dealloc];
 }
 
@@ -62,9 +63,7 @@
 	cityArray = [[NSMutableArray alloc]init];
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
-	NSLog(@"ddd:%@",hotstring);
 	NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
-	NSLog(@"Adslist:%@",adsString);
 	if (![hotstring isEqualToString:@""]) {
 		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
 	}else {
@@ -126,7 +125,7 @@
 		[manager downloadWithURL:[NSURL URLWithString:urlStirng] delegate:self]; 
 		return nil;
 	} 
-	
+
 }
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image { 

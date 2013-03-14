@@ -7,9 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SPCommon.h"
+#import "SPAroundInfo.h"
+#import "HJObjManager.h"
+#import "HJManagedImageV.h"
+#import "PullToRefreshTableView.h"
+#import "SPCell.h"
 
-@interface SPThirdViewController : UIViewController{
+@interface SPThirdViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
 	UIBarButtonItem *rightItem;
+	NSArray *aroundArray;
+	HJObjManager* objMan;
 }
-
+@property (strong ,nonatomic) PullToRefreshTableView *tabelView;
+@property (nonatomic ,retain) SPAroundInfo *cityData;
 @end

@@ -8,10 +8,12 @@
 
 #import <UIKit/UIKit.h>
 #import "SPHotData.h"
+#import "SPAroundInfo.h"
 #import "SDWebImageManager.h"
 #import "UIImageView+WebCache.h"
 @interface SPCell : UITableViewCell<SDWebImageManagerDelegate>{
 	UILabel *nameLabel;
+	UITextView *addressTextView;
 	UITextView *contentTextView;
 	UILabel *downNumLabel;
 	UIImageView *tImageView;
@@ -19,4 +21,5 @@
 }
 
 - (void)setHotData:(SPHotData *)data;
+- (void)setAroundData:(SPAroundInfo *)info;
 @end

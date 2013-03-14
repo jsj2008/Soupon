@@ -9,15 +9,17 @@
 #ifndef Soupon_Status_h
 #define Soupon_Status_h
 
-#define HOTLIST @"http://www.sltouch.com/soupon/hotlist.aspx?city=1&begin=1&max=10"
+#define HOTLIST @"http://www.sltouch.com/soupon/hotlist.aspx?city=1&begin=0&max=10"
 #define GETIMAGE @"http://www.sltouch.com/soupon/upload/"
+#define SEARCHAROUND @"http://www.sltouch.com/soupon/nearby.aspx?x=121.29&y=31.11&begin=0&max=10"
+#define GETCITYS @"http://www.sltouch.com/soupon/citylist.aspx"
+#define ADS @"http://www.sltouch.com/soupon/adbanner.aspx"
+
 #define SEARCHLIST @"http://www.sltouch.com/soupon/couponlist.aspx?category=%@&brand=%@&district=%@&begin=%@&max=%@"
 #define KEYSEARCH @"http://www.sltouch.com/soupon/match.aspx?object=%@&keyword=%@"
-#define GETCITYS @"http://www.sltouch.com/soupon/citylist.aspx"
 #define CHECKUSER @"http://www.sltouch.com/soupon/register.aspx?action=%@&phone=%@&password=%@&email=%@"
-#define SEARCHAROUND @"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=%@&max=%@"
 #define SHOWINFO @"http://www.sltouch.com/soupon/detail.aspx?couponid=%@"
-#define ADS @"http://www.sltouch.com/soupon/adbanner.aspx"
+
 
 
 typedef enum{
