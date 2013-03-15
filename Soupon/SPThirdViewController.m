@@ -37,8 +37,17 @@
 	self.tabBarController.title = @"周边优惠";
 }
 
+- (void)viewWillDisappear:(BOOL)animated{
+	[locManager stopUpdatingLocation];
+}
+
 - (void)viewDidLoad
 {
+	locManager = [[CLLocationManager alloc]init]; 
+    [locManager setDelegate:self]; 
+    [locManager setDesiredAccuracy:kCLLocationAccuracyBest];    
+    [locManager startUpdatingLocation];
+	
 	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
 	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"] ;
 	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
@@ -53,10 +62,10 @@
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
 	[self.view addSubview:tabelView];
-	
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SEARCHAROUND] usedEncoding:&encode error:nil];
-	NSLog(@"ho,%@",hotstring);
+	NSLog(@"ho,%@",ss);
 	if (![hotstring isEqualToString:@""]) {
 		aroundArray = [[SPCommon parserXML:hotstring type:xSearcharound]copy];
 	}else {
@@ -70,9 +79,26 @@
 }
 
 - (void)rightItemClicked{
-	
+	[locManager startUpdatingHeading];
+	[tabelView reloadData:YES];
 }
-
+-(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
+    CLLocationCoordinate2D loc = [newLocation coordinate];
+    lat =[NSString stringWithFormat:@"%f",loc.latitude];//get latitude
+    lon =[NSString stringWithFormat:@"%f",loc.longitude];//get longitude  
+	
+	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
+	//NSLog(@"ss:%@",ss);
+	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ss] usedEncoding:&encode error:nil];
+	if (![hotstring isEqualToString:@""]) {
+		aroundArray = [[SPCommon parserXML:hotstring type:xSearcharound]copy];
+	}else {
+		NSLog(@"error");
+	}
+	[manager stopUpdatingLocation];
+    NSLog(@"%@ %@",lat,lon);
+}
 - (void)viewDidUnload
 {
     [super viewDidUnload];
@@ -141,8 +167,7 @@
 		mi = (HJManagedImageV*)[cell viewWithTag:999];
 		[mi clear];
 	}
-	SPAroundInfo *h = [[SPAroundInfo alloc]init];
-	h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
+	SPAroundInfo *h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
 	[cell setAroundData:h];
 	cell.selectionStyle = UITableViewCellSelectionStyleGray;
 	

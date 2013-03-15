@@ -14,11 +14,12 @@
 #define SEARCHAROUND @"http://www.sltouch.com/soupon/nearby.aspx?x=121.29&y=31.11&begin=0&max=10"
 #define GETCITYS @"http://www.sltouch.com/soupon/citylist.aspx"
 #define ADS @"http://www.sltouch.com/soupon/adbanner.aspx"
-
+#define SHOWINFO @"http://www.sltouch.com/soupon/detail.aspx?couponid="
 #define SEARCHLIST @"http://www.sltouch.com/soupon/couponlist.aspx?category=%@&brand=%@&district=%@&begin=%@&max=%@"
+#define PARTITION @"http://www.sltouch.com/soupon/match.aspx?object="
+
 #define KEYSEARCH @"http://www.sltouch.com/soupon/match.aspx?object=%@&keyword=%@"
 #define CHECKUSER @"http://www.sltouch.com/soupon/register.aspx?action=%@&phone=%@&password=%@&email=%@"
-#define SHOWINFO @"http://www.sltouch.com/soupon/detail.aspx?couponid=%@"
 
 
 
@@ -31,6 +32,9 @@ typedef enum{
 	xSearcharound = 5,
 	xShowinfo = 6,
 	xAds = 7,
+	xPartitionC = 8,
+	xPartitionB = 9,
+	xPartitionD = 10,
 }ParserType;
 
 typedef enum{

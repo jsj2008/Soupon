@@ -13,6 +13,7 @@
 #import "SPShowInfo.h"
 #import "SPAroundInfo.h"
 #import "SPCheckUser.h"
+#import "SPPartition.h"
 
 @implementation SPCommon
 
@@ -91,7 +92,6 @@
 			data.s_indate = [TBXML valueOfAttributeNamed:@"indate" forElement:showinfo];
 			[dataArray addObject:data];
 			[data release];
-			//showinfo = [TBXML nextSiblingNamed:@"ad" searchFromElement:ads];
 		}
 	}
 	if (type == xAds) {
@@ -106,6 +106,32 @@
 			[data release];
 		}
 	}
+	if (type == xPartitionB||type == xPartitionC||type == xPartitionD) {
+		NSString *string = @"";
+		switch (type) {
+			case xPartitionB:
+				string = @"brand";
+				break;
+				
+			case xPartitionC:
+				string = @"category";
+				break;	
+			case xPartitionD:
+				string = @"district";
+				break;
+		}
+		TBXMLElement *ads = [TBXML childElementNamed:string parentElement:root];
+		while (ads!=nil) {
+			SPPartition *data = [[SPPartition alloc]init];
+			data.s_id =[TBXML valueOfAttributeNamed:@"id" forElement:ads];
+			data.s_caption = [TBXML valueOfAttributeNamed:@"caption" forElement:ads];
+			data.s_keyword = [TBXML valueOfAttributeNamed:@"keyword" forElement:ads];
+			ads = [TBXML nextSiblingNamed:string searchFromElement:ads];
+			[dataArray addObject:data];
+			[data release];
+		}
+	}
+	
 	return dataArray;
 }
 

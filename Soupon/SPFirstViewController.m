@@ -15,7 +15,7 @@
 @end
 
 @implementation SPFirstViewController
-@synthesize adsData, cityData,  cityArray, citys, tabelView;
+@synthesize adsData, cityData, citys, tabelView;
 -(void)dealloc{
 	[adsArray release];
 	[cityArray release];
@@ -46,10 +46,9 @@
     [super viewDidLoad];
 
 	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
-	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"] ;
+	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"];
 	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
 	objMan.fileCache = fileCache;
-	
 	// Have the file cache trim itself down to a size & age limit, so it doesn't grow forever
 	fileCache.fileCountLimit = 100;
 	fileCache.fileAgeLimit = 60*60*24*7; //1 week
@@ -58,12 +57,18 @@
 	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 150, 320, 218)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
+	tabelView.tag =10;
 	[self.view addSubview:tabelView];
 	manager = [SDWebImageManager sharedManager];
-	cityArray = [[NSMutableArray alloc]init];
+	
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
 	NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
+	NSString *citysString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:GETCITYS] usedEncoding:&encode error:nil];
+	cityArray = [[SPCommon parserXML:citysString type:xGetcitys]copy];
+	SPCityData *b = (SPCityData*)[cityArray objectAtIndex:0];
+	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked:)];
+	
 	if (![hotstring isEqualToString:@""]) {
 		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
 	}else {
@@ -74,25 +79,41 @@
 	}else {
 		NSLog(@"error");
 	}
-	
 
-
-	
-
-	NSString *citysString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:GETCITYS] usedEncoding:&encode error:nil];
-	NSArray *a = [[SPCommon parserXML:citysString type:xGetcitys]copy];
-	SPCityData *b = (SPCityData*)[a objectAtIndex:0];
-	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked)];
-
-	PagePhotosView *pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,150) withDataSource:self];
+	pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,150) withDataSource:self];
     [self.view addSubview:pagePhotosView];
     [pagePhotosView release];
+}
+
+- (IBAction)leftItemClicked:(id)sender{
+	UITableViewController *controller = [[UITableViewController alloc]init];
+	controller.tableView.delegate =self;
+	controller.tableView.dataSource = self;
+	controller.tableView.tag = 12;
+    popover = [[FPPopoverController alloc] initWithViewController:controller];
+    [controller release];
+    
+    //popover.arrowDirection = FPPopoverArrowDirectionAny;
+    popover.tint = FPPopoverLightGrayTint;
+    
+    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        popover.contentSize = CGSizeMake(100, 500);
+    }
+    popover.arrowDirection = FPPopoverArrowDirectionAny;
+	popover.contentSize = CGSizeMake(120, 350);
+    UIView *i = [[UIView alloc]initWithFrame:CGRectMake(20, 50, 40, 55)];
+    //sender is the UIButton view
+    [popover presentPopoverFromView:i];
+	[i release];
 
 }
 
-- (void)leftItemClicked{
-
-
+- (void)presentedNewPopoverController:(FPPopoverController *)newPopoverController 
+          shouldDismissVisiblePopover:(FPPopoverController*)visiblePopoverController
+{
+    [visiblePopoverController dismissPopoverAnimated:YES];
+    [visiblePopoverController autorelease];
 }
 
 - (void)viewDidUnload
@@ -115,6 +136,7 @@
 - (UIImage *)imageAtIndex:(int)index{
 	SPAdsData *ad =  [adsArray objectAtIndex:index];
 	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,ad.s_adName];
+	
 	UIImage *cachedImage = [manager imageWithURL:[NSURL URLWithString:urlStirng]]; 
 	//NSLog(@"u;%@----%@,%d",urlStirng,ad.s_adName,index);
 	// 将需要缓存的图片加载进来 
@@ -123,15 +145,13 @@
 	}  else{ 
 		// 如果Cache没有命中，则去下载指定网络位置的图片，并且给出一个委托方法          
 		[manager downloadWithURL:[NSURL URLWithString:urlStirng] delegate:self]; 
-		return nil;
+		return cachedImage;
 	} 
-
 }
 
-- (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image { 
-	[SDWebImageManager sharedManager];
+- (void)imageDownloader:(SDWebImageDownloader *)downloader didFinishWithImage:(UIImage *)image{
+	
 }
-
 
 - (void)updateThread:(NSString *)returnKey{
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
@@ -155,7 +175,7 @@
 - (void)updateTableView{
     if (5) {
         //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
-        [tabelView reloadData:NO];
+        [tabelView reloadData:YES];
     } else {
         //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
         [tabelView reloadData:YES];
@@ -167,13 +187,36 @@
 
 #pragma marked TabelViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+	if (tableView.tag == 12) {
+		SPCityData *b = (SPCityData*)[cityArray objectAtIndex:indexPath.row];
+		leftItem.title = b.s_cityCaption;
+		[popover dismissPopoverAnimated:YES];
+		
+		NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+		NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/hotlist.aspx?city=%@&begin=0&max=10",b.s_cityID];
+		NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
+		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
+		[tabelView reloadData:YES];
+	}
 }
 
 - (NSInteger )tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+	if (tableView.tag == 12) {
+		return [cityArray count];
+	}
 	return [hotArray count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+	
+	if (tableView.tag == 12) {
+		UITableViewCell *cell = [[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"Cell"]autorelease];
+		SPCityData *b = (SPCityData*)[cityArray objectAtIndex:indexPath.row];
+		cell.textLabel.text = b.s_cityCaption;
+		return cell;
+	}
+	
 	
 	HJManagedImageV* mi;
 	SPCell *cell = (SPCell *)[tableView dequeueReusableCellWithIdentifier:@"SPCell"];
@@ -189,8 +232,7 @@
 		mi = (HJManagedImageV*)[cell viewWithTag:999];
 		[mi clear];
 	}
-	SPHotData *h = [[SPHotData alloc]init];
-	h = (SPHotData*)[hotArray objectAtIndex:indexPath.row];
+	SPHotData *h =(SPHotData*)[hotArray objectAtIndex:indexPath.row];
 	[cell setHotData:h];
 	cell.selectionStyle = UITableViewCellSelectionStyleGray;
 	
@@ -205,8 +247,11 @@
 	return cell;
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath  
-{  
+-(CGFloat)tableView:(UITableView *)tableViews heightForRowAtIndexPath:(NSIndexPath *)indexPath  
+{
+	if (tableViews.tag == 12) {
+		return 45;
+	}
     return 70;
 }
 

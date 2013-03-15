@@ -32,6 +32,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+	[[UIApplication sharedApplication]setStatusBarHidden:NO];
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     // Override point for customization after application launch.
 	UIViewController *viewController1 = [[[SPFirstViewController alloc] initWithNibName:@"SPFirstViewController" bundle:nil] autorelease];
@@ -45,6 +46,7 @@
 	self.tabBarController.viewControllers = [NSArray arrayWithObjects:viewController1, viewController2, viewController3,viewController4,nil];
 	self.navController.navigationBar.tintColor = [UIColor colorWithRed:150.00f/255.0f green:0 blue:0 alpha:1];
 	self.window.rootViewController = self.navController;
+	
     [self.window makeKeyAndVisible];
     return YES;
 }

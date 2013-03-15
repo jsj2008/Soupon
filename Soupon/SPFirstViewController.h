@@ -15,19 +15,24 @@
 #import "HJObjManager.h"
 #import "HJManagedImageV.h"
 #import "PullToRefreshTableView.h"
+#import "FPPopoverController.h"
 
-@interface SPFirstViewController : UIViewController <PagePhotosDataSource,NSXMLParserDelegate,SDWebImageManagerDelegate,UITableViewDataSource,UITableViewDelegate>
+@interface SPFirstViewController : UIViewController <PagePhotosDataSource,NSXMLParserDelegate,SDWebImageManagerDelegate,UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate>
 {
 	SDWebImageManager *manager;
 	UIBarButtonItem *leftItem;
 	NSArray *hotArray;
 	NSArray *adsArray;
+	NSArray *cityArray;
 	HJObjManager* objMan;
+	PagePhotosView *pagePhotosView;
+	FPPopoverController *popover;
 }
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPAdsData *adsData;
 @property (nonatomic ,retain) SPCityData *cityData;
 
-@property (nonatomic, retain) NSMutableArray *cityArray;
 @property (nonatomic, retain) NSMutableArray *citys;
+
+- (IBAction)leftItemClicked:(id)sender;
 @end

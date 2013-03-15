@@ -13,8 +13,13 @@
 #import "SPCityData.h"
 @interface SPSecondViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
 	UIBarButtonItem *rightItem;
-	NSArray *searchArray;
+	
 	HJObjManager* objMan;
+	NSArray *searchArray;
+	NSArray *brandArray;
+	NSArray *categoryhArray;
+	NSArray *districtArray;
+	
 }
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPCityData *cityData;

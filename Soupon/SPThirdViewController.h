@@ -13,11 +13,15 @@
 #import "HJManagedImageV.h"
 #import "PullToRefreshTableView.h"
 #import "SPCell.h"
+#import<CoreLocation/CoreLocation.h>
 
-@interface SPThirdViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
+@interface SPThirdViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,CLLocationManagerDelegate>{
 	UIBarButtonItem *rightItem;
 	NSArray *aroundArray;
 	HJObjManager* objMan;
+	CLLocationManager *locManager;
+	NSString *lon;
+	NSString *lat;
 }
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPAroundInfo *cityData;

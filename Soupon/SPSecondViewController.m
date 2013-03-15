@@ -11,12 +11,18 @@
 #import "Status.h"
 #import "SPCommon.h"
 
-@interface SPSecondViewController ()
+@interface SPSecondViewController (){
+
+}
 
 @end
 
 @implementation SPSecondViewController
 @synthesize tabelView,cityData;
+
+
+
+
 - (void)dealloc{
 	[tabelView release];
 	[cityData release];
@@ -46,11 +52,16 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+	NSThread* myThread = [[NSThread alloc] initWithTarget:self
+												 selector:@selector(parser)
+												   object:nil];
+	[myThread start];
+	
 	
 	rightItem = [[UIBarButtonItem alloc]initWithTitle:@"搜索" style:UIBarButtonItemStyleDone target:self action:@selector(rightItemClicked)];
-	
 	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
 	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"] ;
+	
 	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
 	objMan.fileCache = fileCache;
 	
@@ -62,15 +73,28 @@
 	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, 320, 367)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
-	[self.view addSubview:tabelView];
+	// Do any additional setup after loading the view, typically from a nib.
+}
+
+-(void)parser{
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	NSString *categoryString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",PARTITION,@"category"]] usedEncoding:&encode error:nil];
+	NSString *brandString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",PARTITION,@"brand"]] usedEncoding:&encode error:nil];
+	NSString *districtString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",PARTITION,@"district"]] usedEncoding:&encode error:nil];
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
+	
+	brandArray = [[[SPCommon parserXML:brandString type:xPartitionB]copy]autorelease];
+	categoryhArray = [[[SPCommon parserXML:categoryString type:xPartitionC]copy]autorelease];
+	districtArray = [[[SPCommon parserXML:districtString type:xPartitionD]copy]autorelease];
+	
+	//NSLog(@"error:%@\n",hotstring);
 	if (![hotstring isEqualToString:@""]) {
 		searchArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
 	}else {
 		NSLog(@"error");
 	}
-	// Do any additional setup after loading the view, typically from a nib.
+	dispatch_async(dispatch_get_main_queue(), ^{[self.view addSubview:tabelView];});
+	
 }
 
 - (void)rightItemClicked{
@@ -145,8 +169,7 @@
 		mi = (HJManagedImageV*)[cell viewWithTag:999];
 		[mi clear];
 	}
-	SPHotData *h = [[SPHotData alloc]init];
-	h = (SPHotData*)[searchArray objectAtIndex:indexPath.row];
+	SPHotData *h = (SPHotData*)[searchArray objectAtIndex:indexPath.row];
 	[cell setHotData:h];
 	cell.selectionStyle = UITableViewCellSelectionStyleGray;
 	
