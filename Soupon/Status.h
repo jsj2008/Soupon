@@ -9,18 +9,24 @@
 #ifndef Soupon_Status_h
 #define Soupon_Status_h
 
-#define HOTLIST @"http://www.sltouch.com/soupon/hotlist.aspx?city=1&begin=0&max=10"
-#define GETIMAGE @"http://www.sltouch.com/soupon/upload/"
-#define SEARCHAROUND @"http://www.sltouch.com/soupon/nearby.aspx?x=121.29&y=31.11&begin=0&max=10"
-#define GETCITYS @"http://www.sltouch.com/soupon/citylist.aspx"
-#define ADS @"http://www.sltouch.com/soupon/adbanner.aspx"
-#define SHOWINFO @"http://www.sltouch.com/soupon/detail.aspx?couponid="
-#define SEARCHLIST @"http://www.sltouch.com/soupon/couponlist.aspx?category=%@&brand=%@&district=%@&begin=%@&max=%@"
-#define PARTITION @"http://www.sltouch.com/soupon/match.aspx?object="
+#define HOTLIST @"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=1&begin=0&max=100"
+#define GETIMAGE @"http://www.sltouch.com/soupon/mobile/upload/"
+#define SEARCHAROUND @"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=121.29&y=31.11&begin=0&max=10"
+#define GETCITYS @"http://www.sltouch.com/soupon/mobile/citylist.aspx"
+#define ADS @"http://www.sltouch.com/soupon/mobile/adbanner.aspx"
+#define SHOWINFO @"http://www.sltouch.com/soupon/mobile/detail.aspx?couponid="
+#define SEARCHLIST @"http://www.sltouch.com/soupon/mobile/couponlist.aspx?category=%@&brand=%@&district=%@&begin=%@&max=%@"
+#define PARTITION @"http://www.sltouch.com/soupon/mobile/match.aspx?object="
 
-#define KEYSEARCH @"http://www.sltouch.com/soupon/match.aspx?object=%@&keyword=%@"
-#define CHECKUSER @"http://www.sltouch.com/soupon/register.aspx?action=%@&phone=%@&password=%@&email=%@"
+#define KEYSEARCH @"http://www.sltouch.com/soupon/mobile/match.aspx?object=%@&keyword=%@"
+#define CHECKUSER @"http://www.sltouch.com/soupon/mobile/register.aspx?action=%@&phone=%@&password=%@&email=%@"
 
+#define ScreenHeight [[UIScreen mainScreen] bounds].size.height  
+#define ScreenWidth [[UIScreen mainScreen] bounds].size.width  
+#define StateBarHeight 20  
+#define MainHeight (ScreenHeight - StateBarHeight)  
+#define MainWidth ScreenWidth  
+#define isIPhone5 ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(640, 1136), [[UIScreen mainScreen] currentMode].size) : NO)
 
 
 typedef enum{

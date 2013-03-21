@@ -7,10 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SPCollectViewController.h"
 
 @interface SPFourthViewController : UIViewController<UIScrollViewDelegate>
 {
 	UIPageControl *pageCon;
+	SPCollectViewController *conC;
 }
 
 @property (retain, nonatomic) IBOutlet UIButton *myFavorable;
@@ -19,5 +21,6 @@
 @property (retain, nonatomic) IBOutlet UIButton *aboutUs;
 @property (retain, nonatomic) IBOutlet UIButton *guess;
 
+@property (retain, nonatomic) IBOutlet UIImageView *im;
 - (IBAction)clicked:(id)sender;
 @end

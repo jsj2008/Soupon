@@ -10,7 +10,12 @@
 #import "Status.h"
 #import "SPCommon.h"
 #import "SPCell.h"
+
 @interface SPFirstViewController ()
+{
+	int cityNum;
+	int pageNum ;
+}
 
 @end
 
@@ -30,7 +35,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
 		self.title = NSLocalizedString(@"热门优惠", @"热门优惠");
-		self.tabBarItem.image = [UIImage imageNamed:@"first"];
+		self.tabBarItem.image = [UIImage imageNamed:@"1.png"];
     }
     return self;
 }
@@ -44,7 +49,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+	pageNum = 10;
 	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
 	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"];
 	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
@@ -54,7 +59,7 @@
 	fileCache.fileAgeLimit = 60*60*24*7; //1 week
 	[fileCache trimCacheUsingBackgroundThread];
 	
-	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 150, 320, 218)];
+	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 130, 320, 238)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
 	tabelView.tag =10;
@@ -65,12 +70,14 @@
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
 	NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
 	NSString *citysString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:GETCITYS] usedEncoding:&encode error:nil];
+	NSLog(@"city:%@",citysString);
 	cityArray = [[SPCommon parserXML:citysString type:xGetcitys]copy];
 	SPCityData *b = (SPCityData*)[cityArray objectAtIndex:0];
 	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked:)];
 	
 	if (![hotstring isEqualToString:@""]) {
 		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
+		//[hotArray addObjectsFromArray:dataSorce];
 	}else {
 		NSLog(@"error");
 	}
@@ -80,7 +87,18 @@
 		NSLog(@"error");
 	}
 
-	pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,150) withDataSource:self];
+	if (isIPhone5) {
+		CGRect mainRect = self.view.frame;
+		mainRect.size.height = ScreenHeight;
+		self.view.frame = mainRect;
+		
+		//CGRect rect = tabelView.frame;
+		CGRect r = CGRectMake(0, 130, 320, 326);
+		//rect.origin.y = MainHeight- rect.size.height-176;
+		tabelView.frame = r;
+	}
+	
+	pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,130) withDataSource:self];
     [self.view addSubview:pagePhotosView];
     [pagePhotosView release];
 }
@@ -154,15 +172,17 @@
 }
 
 - (void)updateThread:(NSString *)returnKey{
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+	    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     sleep(2);
     switch ([returnKey intValue]) {
         case k_RETURN_REFRESH:
-
+			
+			//[self refresh];
+			
             break;
             
         case k_RETURN_LOADMORE:
-
+			//[self loadMore];
             break;
             
         default:
@@ -172,16 +192,54 @@
     [pool release];
 }
 
+- (void)refresh{
+	//[hotArray removeAllObjects];
+	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=%d&begin=0&max=10",cityNum];
+	
+	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
+	NSLog(@"sd:%@",hotstring);
+	hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
+	//[hotArray addObjectsFromArray:dataSorce];
+	//[tabelView reloadData:YES];
+}
+
+- (void)loadMore{
+	//[hotArray removeAllObjects];
+	pageNum += pageNum;
+	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=%d&begin=0&max=%d",cityNum,pageNum];
+	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
+	hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
+	//[hotArray addObjectsFromArray:dataSorce];
+	[tabelView reloadData];
+}
+
 - (void)updateTableView{
     if (5) {
         //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
-        [tabelView reloadData:YES];
+        [tabelView reloadData:NO];
     } else {
         //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
         [tabelView reloadData:YES];
     }
 }
 
+#pragma mark -
+#pragma mark Scroll View Delegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    [tabelView tableViewDidDragging];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+    NSInteger returnKey = [tabelView tableViewDidEndDragging];
+    
+    //  returnKey用来判断执行的拖动是下拉还是上拖，如果数据正在加载，则返回DO_NOTHING
+    if (returnKey != k_RETURN_DO_NOTHING) {
+        NSString * key = [NSString stringWithFormat:@"%d", returnKey];
+        [NSThread detachNewThreadSelector:@selector(updateThread:) toTarget:self withObject:key];
+    }
+}
 
 
 
@@ -194,14 +252,34 @@
 		[popover dismissPopoverAnimated:YES];
 		
 		NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-		NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/hotlist.aspx?city=%@&begin=0&max=10",b.s_cityID];
+		NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=%@&begin=0&max=100",b.s_cityID];
+		cityNum = [b.s_cityID intValue];
 		NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
 		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
+		//[hotArray addObjectsFromArray:dataSorce];
 		[tabelView reloadData:YES];
+	}
+	else {
+		if (!con) {
+			con = [[SPShowInfoViewController alloc]init];
+		}
+
+		SPHotData *b = (SPHotData*)[hotArray objectAtIndex:indexPath.row];
+		NSString *s = [NSString stringWithFormat:@"%@%@",SHOWINFO,b.s_hotid];
+		NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+		NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
+		NSLog(@"%@",hotstring);
+		[con setAll:s];
+		[self.navigationController pushViewController:con animated:YES];
 	}
 }
 
 - (NSInteger )tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+	if ([hotArray count] == 0) {
+        //  本方法是为了在数据未空时，让“下拉刷新”视图可直接显示，比较直观
+        tableView.contentInset = UIEdgeInsetsMake(k_STATE_VIEW_HEIGHT, 0, 0, 0);
+    }
+	
 	if (tableView.tag == 12) {
 		return [cityArray count];
 	}

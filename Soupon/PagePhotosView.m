@@ -79,12 +79,12 @@
 	
     // replace the placeholder if necessary
     UIImageView *view = [imageViews objectAtIndex:page];
-    if ((NSNull *)view == [NSNull null]) {
+    //if ((NSNull *)view == [NSNull null]) {
 		UIImage *image = [dataSource imageAtIndex:page];
-        view = [[UIImageView alloc] initWithImage:image];
+        view = [[[UIImageView alloc] initWithImage:image]autorelease];
         [imageViews replaceObjectAtIndex:page withObject:view];
-		[view release];
-    }
+		
+    //}
 	//NSLog(@"%d,%d",page,kNumberOfPages);
     // add the controller's view to the scroll view
     if (nil == view.superview) {
@@ -94,7 +94,7 @@
         view.frame = frame;
         [scrollView addSubview:view];
     }
-    
+    //[view dealloc];
 }
 
 - (void)scrollViewDidScroll {

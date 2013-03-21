@@ -15,5 +15,12 @@
 @property (nonatomic, retain) NSString *s_icon;
 @property (nonatomic, retain) NSString *s_address;
 @property (nonatomic, retain) NSString *s_distance;
+@property (nonatomic, retain) NSString *s_categoryid;
+@property (nonatomic, retain) NSString *s_categorycaption;
+@property (nonatomic, retain) NSString *s_brandid;
+@property (nonatomic, retain) NSString *s_brandcaption;
+@property (nonatomic, retain) NSString *s_districtid;
+@property (nonatomic, retain) NSString *s_districtcaption;
+
 
 @end

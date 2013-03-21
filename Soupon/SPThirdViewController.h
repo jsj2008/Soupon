@@ -25,4 +25,16 @@
 }
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPAroundInfo *cityData;
+
+@property (retain, nonatomic) IBOutlet UIView *alertView;
+@property (retain, nonatomic) IBOutlet UILabel *storeName;
+@property (retain, nonatomic) IBOutlet UIButton *attentionButton;
+@property (retain, nonatomic) IBOutlet UIButton *favorableButton;
+@property (retain, nonatomic) IBOutlet UIButton *cancelButton;
+
+- (IBAction)hide:(id)sender;
+- (IBAction)attention:(id)sender;
+- (IBAction)favorable:(id)sender;
+
+
 @end

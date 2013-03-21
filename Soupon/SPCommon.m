@@ -58,8 +58,8 @@
 		TBXMLElement *registers = [TBXML childElementNamed:@"register" parentElement:root];
 		while (registers!=nil) {
             SPCheckUser *check = [[SPCheckUser alloc] init];
-            check.s_result = [TBXML valueOfAttributeNamed:@"result" forElement:registers];
-            check.s_description = [TBXML valueOfAttributeNamed:@"description" forElement:registers];
+            check.s_result = [TBXML valueOfAttributeNamed:@"result" forElement:root];
+            check.s_description = [TBXML valueOfAttributeNamed:@"description" forElement:root];
 			
 			[dataArray addObject:check];
 		    [check release];
@@ -76,6 +76,13 @@
             around.s_icon = [TBXML valueOfAttributeNamed:@"icon" forElement:node];
             around.s_distance = [TBXML valueOfAttributeNamed:@"distance" forElement:node];
 			around.s_address = [TBXML valueOfAttributeNamed:@"address" forElement:node];
+			around.s_categoryid = [TBXML valueOfAttributeNamed:@"categoryid" forElement:node];
+            around.s_categorycaption = [TBXML valueOfAttributeNamed:@"categorycaption" forElement:node];
+            around.s_brandcaption = [TBXML valueOfAttributeNamed:@"brandcaption" forElement:node];
+            around.s_brandid = [TBXML valueOfAttributeNamed:@"brandid" forElement:node];
+            around.s_districtcaption = [TBXML valueOfAttributeNamed:@"districtcaption" forElement:node];
+			around.s_districtid = [TBXML valueOfAttributeNamed:@"districtid" forElement:node];
+			
             node = [TBXML nextSiblingNamed:@"node" searchFromElement:node];
 			
 			[dataArray addObject:around];
@@ -83,17 +90,7 @@
 		}
 
 	}
-	if (type == xShowinfo) {
-		TBXMLElement *showinfo = [TBXML childElementNamed:@"detail" parentElement:root];
-		while (showinfo!=nil) {
-			SPShowInfo *data = [[SPShowInfo alloc]init];
-			data.s_caption =[TBXML valueOfAttributeNamed:@"caption" forElement:showinfo];
-			data.s_content = [TBXML valueOfAttributeNamed:@"content" forElement:showinfo];
-			data.s_indate = [TBXML valueOfAttributeNamed:@"indate" forElement:showinfo];
-			[dataArray addObject:data];
-			[data release];
-		}
-	}
+
 	if (type == xAds) {
 		TBXMLElement *ads = [TBXML childElementNamed:@"ad" parentElement:root];
 		while (ads!=nil) {
@@ -119,6 +116,8 @@
 			case xPartitionD:
 				string = @"district";
 				break;
+			default:
+				break;
 		}
 		TBXMLElement *ads = [TBXML childElementNamed:string parentElement:root];
 		while (ads!=nil) {
@@ -134,6 +133,8 @@
 	
 	return dataArray;
 }
+
+
 
 + (NSMutableArray *)parserKeySearchXML:(NSString *)dataString type:(KeySearchType)type{
 	NSMutableArray *dataArray = [[[NSMutableArray alloc]init]autorelease];

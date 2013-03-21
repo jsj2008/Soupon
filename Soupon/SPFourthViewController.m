@@ -8,6 +8,8 @@
 
 #import "SPFourthViewController.h"
 #import "SPLoginViewController.h"
+#import "SPCommon.h"
+#import "SPCollectViewController.h"
 
 @interface SPFourthViewController ()
 
@@ -19,6 +21,7 @@
 @synthesize nwCourse;
 @synthesize aboutUs;
 @synthesize guess;
+@synthesize im;
 
 - (void)dealloc{
 	
@@ -27,6 +30,7 @@
 	[nwCourse release];
 	[aboutUs release];
 	[guess release];
+    [im release];
 	[super dealloc];
 }
 
@@ -35,7 +39,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
 	if (self) {
 		self.title = NSLocalizedString(@"我的优惠", @"我的优惠");
-		self.tabBarItem.image = [UIImage imageNamed:@"second"];
+		self.tabBarItem.image = [UIImage imageNamed:@"4.png"];
     }
     return self;
 }
@@ -49,6 +53,14 @@
 - (void)viewDidLoad
 {	
     [super viewDidLoad];
+	if (isIPhone5) {
+		CGRect mainRect = self.view.frame;
+		mainRect.size.height = ScreenHeight;
+		self.view.frame = mainRect;
+		
+		CGRect r =  CGRectMake(0, -25, 320, 480);
+		im.frame = r;
+	}
 }
 
 - (void)viewDidUnload
@@ -58,32 +70,46 @@
 	[self setNwCourse:nil];
 	[self setAboutUs:nil];
 	[self setGuess:nil];
+    [self setIm:nil];
     [super viewDidUnload];
 }
 
 - (IBAction)clicked:(id)sender{
 	UIViewController *viewCon = [[UIViewController alloc]init];
 	if (sender == aboutUs) {
-		UIImageView *imageView = [[[UIImageView alloc]initWithImage:[UIImage imageNamed:@"aboutus_bg.png"]]autorelease];
+		UIImageView *imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"aboutus_bg.png"]];
 		[viewCon setView:imageView];
-		
+		[imageView release];
 	}else if (sender == guess) {
-		NSURLRequest *request =[[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]]autorelease];
+		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
+			SPLoginViewController *loginCon = [[SPLoginViewController alloc]init];
+			[self presentModalViewController:loginCon animated:YES];
+			return;
+		}
+		NSString *phone = [[NSUserDefaults standardUserDefaults]objectForKey:@"phone"];
+		NSURLRequest *request =[NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",@"http://www.sltouch.com/soupon/mobile/guess.aspx?phone=",phone]]];
 		
 		UIWebView *webView = [[UIWebView alloc]init];
 		[webView loadRequest:request];
 		[viewCon setView:webView];
+		[webView release];
 	}else if (sender == nwCourse) {
-		NSLog(@"dsd:%@",self.parentViewController.parentViewController);
-		UINavigationController *c = (UINavigationController *)self.parentViewController.parentViewController;
-		c.navigationBar.tintColor = [UIColor colorWithRed:150.00f/255.0f green:0 blue:0 alpha:0.4];
+		
 		UIScrollView *view = [[UIScrollView alloc]initWithFrame:CGRectMake(0,0, 320, 460)];
 		view.delegate =self;
-		view.contentSize = CGSizeMake(4*320, 460) ;
+		view.contentSize = CGSizeMake(4*320, 0) ;
 		UIImageView *im1 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 320, 480)];
 		UIImageView *im2 = [[UIImageView alloc]initWithFrame:CGRectMake(320, 0, 320, 480)];
 		UIImageView *im3 = [[UIImageView alloc]initWithFrame:CGRectMake(640, 0, 320, 480)];
 		UIImageView *im4 = [[UIImageView alloc]initWithFrame:CGRectMake(960, 0, 320, 480)];
+		if (isIPhone5) {
+			[im1 setFrame:CGRectMake(0, 0, 320, 504)];
+			[im2 setFrame:CGRectMake(320, 0, 320, 504)];
+			[im3 setFrame:CGRectMake(640, 0, 320, 504)];
+			[im4 setFrame:CGRectMake(960, 0, 320, 504)];
+		}
+		
+		
 		[im1 setImage:[UIImage imageNamed:@"help_1.png"]];
 		[im2 setImage:[UIImage imageNamed:@"help_2.png"]];
 		[im3 setImage:[UIImage imageNamed:@"help_3.png"]];
@@ -109,23 +135,40 @@
 		[viewCon setView:view];
 		
 	}else if (sender == myFavorable){
-		SPLoginViewController *loginCon = [[SPLoginViewController alloc]init];
-		[viewCon setView:loginCon.view];
-		
+		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
+			SPLoginViewController *loginCon = [[SPLoginViewController alloc]init];
+			[self presentModalViewController:loginCon animated:YES];
+			return;
+		}
+		if (conC ==  nil) {
+			conC = [[SPCollectViewController alloc]init];
+		}
+		else{[conC searchData];}
+		[self.navigationController pushViewController:conC animated:YES];
+		return;
 	}else if (sender == myAttention) {
-		
+		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
+			SPLoginViewController *loginCon = [[[SPLoginViewController alloc]init]autorelease];
+			[self presentModalViewController:loginCon animated:YES];
+			return;
+		}
+		if (conC ==  nil) {
+			conC = [[SPCollectViewController alloc]init];
+		}
+		else{[conC searchData];}
+		//[conC searchData];
+		[self.navigationController pushViewController:conC animated:YES];
+		return;
 	}
 
 	[self.navigationController pushViewController:viewCon animated:YES];
 	[viewCon release];
-
 }
 
 -(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
     
     int page =scrollView.bounds.origin.x/160;
-    NSLog(@"sd:%d",page);
-    [pageCon setCurrentPage:1];
+    [pageCon setCurrentPage:page];
 }
 
 

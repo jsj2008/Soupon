@@ -8,16 +8,29 @@
 
 #import "SPThirdViewController.h"
 #import "Status.h"
-@interface SPThirdViewController ()
+#import <QuartzCore/QuartzCore.h>
+@interface SPThirdViewController (){
+	int y;
+}
 
 @end
 
 @implementation SPThirdViewController
+@synthesize alertView;
+@synthesize storeName;
+@synthesize attentionButton;
+@synthesize favorableButton;
+@synthesize cancelButton;
 @synthesize tabelView,cityData;
 - (void)dealloc{
 	[tabelView release];
 	[cityData release];
 	[rightItem release];
+	[alertView release];
+	[storeName release];
+	[attentionButton release];
+	[favorableButton release];
+	[cancelButton release];
 	[super dealloc];
 }
 
@@ -26,7 +39,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
 		self.title = NSLocalizedString(@"周边优惠", @"周边优惠");
-		self.tabBarItem.image = [UIImage imageNamed:@"second"];
+		self.tabBarItem.image = [UIImage imageNamed:@"3.png"];
     }
     return self;
 }
@@ -43,6 +56,11 @@
 
 - (void)viewDidLoad
 {
+	self.alertView.frame = CGRectMake(25, 80, 270, 182);
+	self.alertView.layer.borderWidth = 5.0f;
+	self.alertView.layer.borderColor = [[UIColor lightGrayColor]CGColor];
+	self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0.6, 0.6);
+	
 	locManager = [[CLLocationManager alloc]init]; 
     [locManager setDelegate:self]; 
     [locManager setDesiredAccuracy:kCLLocationAccuracyBest];    
@@ -63,7 +81,7 @@
 	tabelView.delegate = self;
 	[self.view addSubview:tabelView];
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
+	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SEARCHAROUND] usedEncoding:&encode error:nil];
 	NSLog(@"ho,%@",ss);
 	if (![hotstring isEqualToString:@""]) {
@@ -71,7 +89,16 @@
 	}else {
 		NSLog(@"error");
 	}
-	
+	if (isIPhone5) {
+		CGRect mainRect = self.view.frame;
+		mainRect.size.height = ScreenHeight;
+		self.view.frame = mainRect;
+		
+		CGRect rect = tabelView.frame;
+		CGRect r =  CGRectMake(0, 0, 320, 456);
+		rect.origin.y = MainHeight - rect.size.height;
+		tabelView.frame = r;
+	}
 	rightItem = [[UIBarButtonItem alloc]initWithTitle:@"刷新" style:UIBarButtonItemStyleDone target:self action:@selector(rightItemClicked)];
 	[self.tabBarController.navigationItem setRightBarButtonItem:rightItem];
 	
@@ -88,7 +115,7 @@
     lon =[NSString stringWithFormat:@"%f",loc.longitude];//get longitude  
 	
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
+	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
 	//NSLog(@"ss:%@",ss);
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ss] usedEncoding:&encode error:nil];
 	if (![hotstring isEqualToString:@""]) {
@@ -101,6 +128,11 @@
 }
 - (void)viewDidUnload
 {
+	[self setAlertView:nil];
+	[self setStoreName:nil];
+	[self setAttentionButton:nil];
+	[self setFavorableButton:nil];
+	[self setCancelButton:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -141,10 +173,94 @@
 }
 
 
+- (void)bounceOutAnimationStoped
+{
+    [UIView animateWithDuration:0.1 animations:
+     ^(void){
+         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,0.9, 0.9);
+         self.alertView.alpha = 0.8;
+     }
+                     completion:^(BOOL finished){
+                         [self bounceInAnimationStoped];
+                     }];
+}
+- (void)bounceInAnimationStoped
+{
+    [UIView animateWithDuration:0.1 animations:
+     ^(void){
+         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,1, 1);
+         self.alertView.alpha = 1.0;
+     }
+                     completion:^(BOOL finished){
+                         [self animationStoped];
+                     }];
+}
+- (void)animationStoped
+{
+    
+}
 
+- (IBAction)hide:(id)sender
+{
+	[self.alertView removeFromSuperview];
+    self.alertView.alpha = 0;
+	self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,0.6, 0.6);
+}
+
+- (IBAction)attention:(id)sender{
+
+}
+
+
+- (IBAction)favorable:(id)sender{
+	[self.alertView removeFromSuperview];
+
+	SPAroundInfo *h = (SPAroundInfo*)[aroundArray objectAtIndex:y];
+	NSUserDefaults *aDe = [NSUserDefaults standardUserDefaults];
+	[aDe setObject:h.s_categoryid forKey:@"cid"];
+	[aDe setObject:h.s_districtid forKey:@"diid"];
+	[aDe setObject:h.s_brandid forKey:@"bid"];
+	[aDe setObject:h.s_categorycaption forKey:@"c"];
+	[aDe setObject:h.s_districtcaption forKey:@"d"];
+	[aDe setObject:h.s_brandcaption forKey:@"b"];
+	[aDe setBool:YES forKey:@"show"];
+	[aDe synchronize];
+
+	self.tabBarController.selectedIndex = 1;
+}
+
+#pragma mark -
+#pragma mark Scroll View Delegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    [tabelView tableViewDidDragging];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+    NSInteger returnKey = [tabelView tableViewDidEndDragging];
+    
+    //  returnKey用来判断执行的拖动是下拉还是上拖，如果数据正在加载，则返回DO_NOTHING
+    if (returnKey != k_RETURN_DO_NOTHING) {
+        NSString * key = [NSString stringWithFormat:@"%d", returnKey];
+        [NSThread detachNewThreadSelector:@selector(updateThread:) toTarget:self withObject:key];
+    }
+}
 
 #pragma marked TabelViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+	y = indexPath.row;
+	[self.view addSubview:alertView];
+	SPAroundInfo *h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
+	self.storeName.text = h.s_caption;
+	[UIView animateWithDuration:0.2 animations:
+     ^(void){
+		 
+         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,1.1f, 1.1f);
+         self.alertView.alpha = 0.5;
+	 }
+                     completion:^(BOOL finished){
+                         [self bounceOutAnimationStoped];
+                     }];
 }
 
 - (NSInteger )tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{

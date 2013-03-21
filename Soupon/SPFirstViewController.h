@@ -16,17 +16,20 @@
 #import "HJManagedImageV.h"
 #import "PullToRefreshTableView.h"
 #import "FPPopoverController.h"
+#import "SPShowInfoViewController.h"
 
 @interface SPFirstViewController : UIViewController <PagePhotosDataSource,NSXMLParserDelegate,SDWebImageManagerDelegate,UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate>
 {
 	SDWebImageManager *manager;
 	UIBarButtonItem *leftItem;
-	NSArray *hotArray;
+	NSMutableArray *hotArray;
+	NSArray *dataSorce;
 	NSArray *adsArray;
 	NSArray *cityArray;
 	HJObjManager* objMan;
 	PagePhotosView *pagePhotosView;
 	FPPopoverController *popover;
+	SPShowInfoViewController *con;
 }
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPAdsData *adsData;

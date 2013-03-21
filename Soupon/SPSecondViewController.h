@@ -11,7 +11,11 @@
 #import "HJManagedImageV.h"
 #import "PullToRefreshTableView.h"
 #import "SPCityData.h"
-@interface SPSecondViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
+#import "SPShowInfoViewController.h"
+#import "FPPopoverController.h"
+#import "SPAroundInfo.h"
+
+@interface SPSecondViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate>{
 	UIBarButtonItem *rightItem;
 	
 	HJObjManager* objMan;
@@ -19,9 +23,14 @@
 	NSArray *brandArray;
 	NSArray *categoryhArray;
 	NSArray *districtArray;
-	
+	SPShowInfoViewController *con;
+	FPPopoverController *popover;
 }
+@property (retain, nonatomic) IBOutlet UIButton *classifyButton;
+@property (retain, nonatomic) IBOutlet UIButton *brandButton;
+@property (retain, nonatomic) IBOutlet UIButton *businessButton;
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPCityData *cityData;
 
+- (IBAction)clicked:(id)sender;
 @end
