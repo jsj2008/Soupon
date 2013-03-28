@@ -2,7 +2,7 @@
 //  SPShowInfoViewController.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-16.
+//  Created by Yuan on 13-3-16.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
 //
 
@@ -40,17 +40,32 @@
 		lineDateLabel.text = [dic objectForKey:@"indate"];
 		contentTextView.text = [dic objectForKey:@"content"];
 		captionLabel.text = [dic objectForKey:@"caption"];
-	if (!dic ) {
-	lineDateLabel.text = col.indate;
-	contentTextView.text = col.discreption;
-	captionLabel.text = col.caption;
+	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,[dic objectForKey:@"image"]];
+	
+	UIImage *cachedImage = [manager imageWithURL:[NSURL URLWithString:urlStirng]]; 
+	
+	// 将需要缓存的图片加载进来 
+	if(cachedImage) { 
+		theImageView.image = cachedImage;
+	}  else{ 
+		// 如果Cache没有命中，则去下载指定网络位置的图片，并且给出一个委托方法          
+		[manager downloadWithURL:[NSURL URLWithString:urlStirng] delegate:self]; 
+		
 	}
+
+}
+
+- (void)imageDownloader:(SDWebImageDownloader *)downloader didFinishWithImage:(UIImage *)image{
+		theImageView.image = image;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	[self.view setBackgroundColor:[UIColor colorWithRed:150.0f/255.0f green:200.0f/255.0f blue:100.0f/255.0f alpha:1.0]];
+	
+	manager = [SDWebImageManager sharedManager];
+	//设置详细页面北京颜色
+	[self.view setBackgroundColor:InfoColor];
 	
 }
 
@@ -60,8 +75,8 @@
 	[parser parse];
 }
 
-- (void)setCollect:(Collect *)collect{
-	col = collect;
+- (void)setCollect:(NSDictionary *)collect{
+	dic = collect;
 	
 }
 
@@ -78,38 +93,70 @@
 
 - (IBAction)shoucang:(id)sender{
 	if (![[[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]isEqual:@""]) {
+		NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"plistdemo" ofType:@"plist"];  
+		NSMutableDictionary *data = [[NSMutableDictionary alloc] initWithContentsOfFile:plistPath];  
+		NSLog(@"%@", data);
+		//获取应用程序沙盒的Documents目录  
+		NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);  
+		NSString *plistPath1 = [paths objectAtIndex:0];  
 		
-		NSString *modelPath  = [[NSBundle mainBundle]pathForResource:@"collectModel" ofType:@"momd"];
-		NSURL *modelURL = [NSURL fileURLWithPath:modelPath];
-		managedObjectModel = [[NSManagedObjectModel alloc]initWithContentsOfURL:modelURL];
-		
-		NSURL *storeURL = nil;
-		NSError *error = nil;
-
-		persistentStoreCoordinator  =[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:managedObjectModel];
-		storeURL  =[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]lastObject];
-		storeURL = [storeURL URLByAppendingPathComponent:@"collectModel.sqlite"];
-		[persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error];
-		managedObjectContext = [[NSManagedObjectContext alloc]init];
-		NSManagedObjectContext *unused __attribute__((unused)) = managedObjectContext;
-		[managedObjectContext setPersistentStoreCoordinator:persistentStoreCoordinator];
-		[managedObjectContext setMergePolicy:NSOverwriteMergePolicy];
-		
-		NSEntityDescription *description = [NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext];
-		Collect *obj = [[[Collect alloc]initWithEntity:description insertIntoManagedObjectContext:nil]autorelease];
-		obj.caption  = [dic objectForKey:@"caption"];
-		obj.discreption = [dic objectForKey:@"content"];
-		obj.indate = [dic objectForKey:@"indate"];
-		
-		[managedObjectContext insertObject:obj];
-		
-		if ([managedObjectContext save:nil]) {
-			NSLog(@"收藏成功！");
+		//得到完整的文件名  
+		NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];  
+		data = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
+		if(data == nil)
+		{
+			//1. 创建一个plist文件 
+			NSFileManager* fm = [NSFileManager defaultManager];
+			[fm createFileAtPath:filename contents:nil attributes:nil];        
 		}
+		
+		[data setObject:dic forKey:[dic objectForKey:@"caption"]]; 
+		//输入写入  
+		[data writeToFile:filename atomically:YES];  
+		
+		//那怎么证明我的数据写入了呢？读出来看看  
+		NSMutableDictionary *data1 = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
+		NSLog(@"%@", data1);
+		
+		
+		
+		
+//		NSString *modelPath  = [[NSBundle mainBundle]pathForResource:@"collectModel" ofType:@"momd"];
+//		NSURL *modelURL = [NSURL fileURLWithPath:modelPath];
+//		managedObjectModel = [[NSManagedObjectModel alloc]initWithContentsOfURL:modelURL];
+//		
+//		NSURL *storeURL = nil;
+//		NSError *error = nil;
+//
+//		persistentStoreCoordinator  =[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:managedObjectModel];
+//		storeURL  =[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]lastObject];
+//		storeURL = [storeURL URLByAppendingPathComponent:@"collectModel.sqlite"];
+//		[persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error];
+//		managedObjectContext = [[NSManagedObjectContext alloc]init];
+//		//NSManagedObjectContext *unused __attribute__((unused)) = managedObjectContext;
+//		[managedObjectContext setPersistentStoreCoordinator:persistentStoreCoordinator];
+//		[managedObjectContext setMergePolicy:NSOverwriteMergePolicy];
+//		
+//		NSEntityDescription *description = [NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext];
+//		Collect *obj = [[[Collect alloc]initWithEntity:description insertIntoManagedObjectContext:nil]autorelease];
+//		obj.caption  = [dic objectForKey:@"caption"];
+//		obj.discreption = [dic objectForKey:@"content"];
+//		obj.indate = [dic objectForKey:@"indate"];
+//		obj.image = [dic objectForKey:@"image"];
+//		[managedObjectContext insertObject:obj];
+		
+		//if ([managedObjectContext save:nil]) {
+			NSLog(@"收藏成功！");
+		//}
 		UIAlertView *a  = [[UIAlertView alloc]initWithTitle:@"收藏成功！" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
+		//[cellectButton setHidden:YES];
 		[a show];
 		[a release];
 	}
+}
+
+- (void)setButtonHidden{
+	[cellectButton setHidden:YES];
 }
 
 - (void)viewDidUnload

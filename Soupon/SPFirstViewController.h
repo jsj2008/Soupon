@@ -2,9 +2,9 @@
 //  SPFirstViewController.h
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-11.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
-//
+//  第一个界面，包括滚动广告，热门优惠信息
 
 #import <UIKit/UIKit.h>
 #import "PagePhotosView.h"

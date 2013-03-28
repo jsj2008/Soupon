@@ -2,7 +2,7 @@
 //  SPAppDelegate.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-11.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
 //
 
@@ -15,6 +15,8 @@
 #import "SPThirdViewController.h"
 
 #import "SPFourthViewController.h"
+
+#import "Status.h"
 
 @implementation SPAppDelegate
 
@@ -44,7 +46,7 @@
 	self.tabBarController.tabBar.selectedImageTintColor = [UIColor redColor];
 	self.navController = [[[UINavigationController alloc] initWithRootViewController:self.tabBarController]autorelease];
 	self.tabBarController.viewControllers = [NSArray arrayWithObjects:viewController1, viewController2, viewController3,viewController4,nil];
-	self.navController.navigationBar.tintColor = [UIColor colorWithRed:150.00f/255.0f green:0 blue:0 alpha:1];
+	self.navController.navigationBar.tintColor = NavBarColor;
 	self.window.rootViewController = self.navController;
 	
     [self.window makeKeyAndVisible];

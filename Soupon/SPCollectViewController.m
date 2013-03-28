@@ -2,20 +2,20 @@
 //  SPCollectViewController.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-19.
+//  Created by Yuan on 13-3-19.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
 //
 
 #import "SPCollectViewController.h"
-#import "Collect.h"
-#import <CoreData/CoreData.h>
+#import "Status.h"
+#import "SPCell.h"
 
 @interface SPCollectViewController ()
 
 @end
 
 @implementation SPCollectViewController
-@synthesize tabel ,dataSource = dataSource_,managedObjectContext = managedObjectContext_,managedObjectModel = managedObjectModel_,persistentStoreCoordinator = persistentStoreCoordinator_;
+@synthesize tabel ,dataSource = dataSource_;
 //#ifdef _FOR_DEBUG_  
 //-(BOOL) respondsToSelector:(SEL)aSelector {  
 //    printf("SELECTOR: %s\n", [NSStringFromSelector(aSelector) UTF8String]);  
@@ -34,78 +34,66 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	NSString *modelPath  = [[NSBundle mainBundle]pathForResource:@"collectModel" ofType:@"momd"];
-	NSURL *modelURL = [NSURL fileURLWithPath:modelPath];
-	managedObjectModel_ = [[NSManagedObjectModel alloc]initWithContentsOfURL:modelURL];
 	
-    NSURL *storeURL = nil;
-	NSError *error = nil;
 	tabel = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, 320, 416) style:UITableViewStylePlain];
 	tabel.delegate = self;
 	tabel.dataSource  =self;
 	[self.view addSubview:tabel];
-	persistentStoreCoordinator_  =[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:managedObjectModel_];
-	storeURL  =[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]lastObject];
-	storeURL = [storeURL URLByAppendingPathComponent:@"collectModel.sqlite"];
-	[persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error];
-	managedObjectContext_  = [[NSManagedObjectContext alloc]init];
-	NSManagedObjectContext *unused __attribute__((unused)) = managedObjectContext_;
-	[managedObjectContext_ setPersistentStoreCoordinator:persistentStoreCoordinator_];
-	[managedObjectContext_ setMergePolicy:NSOverwriteMergePolicy];
-	NSMutableArray *array = [NSMutableArray arrayWithCapacity:0];
-	self.dataSource = array;
-	[self searchData];
-}
-
-//- (void)addData:(NSString*)captions discreption:(NSString *)dis indate:(NSString *)indate{
-//	NSEntityDescription *description = [NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext_];
-//	Collect *obj = [[[Collect alloc]initWithEntity:description insertIntoManagedObjectContext:nil]autorelease];
-//	obj.caption  = captions;
-//	obj.discreption = dis;
-//	obj.indate = indate;
-//	
-//	[managedObjectContext_ insertObject:obj];
-//	
-//	if ([managedObjectContext_ save:nil]) {
-//		NSLog(@"sssss");
-//	}
-//}
-
-- (void)searchData{
-	[dataSource_ removeAllObjects];
-	NSError *error =nil;
-//	NSFetchRequest *fetchRequest = [[NSFetchRequest alloc]init];
-//	[fetchRequest setEntity:[NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext_]];
-//	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(caption == %@)",@"扶阳堂养生连锁",@"(caption == %@)",@"小肥羊美味优惠"];
-//	[fetchRequest setPredicate:predicate];
-//	
-//	NSArray *array = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
-//	coun = [array count];
-//	aaa = array;
-	
-	
-	NSFetchRequest *request=[[NSFetchRequest alloc] init]; 
-	NSEntityDescription *entity=[NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext_]; 
-	[request setEntity:entity];
-	NSArray *array=[[[self managedObjectContext] executeFetchRequest:request error:&error] copy];
-	[dataSource_ addObjectsFromArray:array];
-	[self.tabel reloadData];
-}
-
-- (void)deleteCollect:(id)sender{
-	NSError *error = nil;
-	NSFetchRequest *fetchRequest = [[NSFetchRequest alloc]init];
-	[fetchRequest setEntity:[NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext_]];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(dicreption ==%@)",@"RealTool"];
-	[fetchRequest setPredicate:predicate];
-	NSArray *array  = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
-	for (Collect *collect in array) {
-		[managedObjectContext_ delete:collect];
+	if (isIPhone5) {
+		CGRect mainRect = self.view.frame;  
+		mainRect.size.height = ScreenHeight;  
+		self.view.frame = mainRect; 
+		
+		CGRect rect = tabel.frame;
+		CGRect r =  CGRectMake(0, 0, 320, 456);
+		rect.origin.y = MainHeight - rect.size.height;
+		tabel.frame = r; 
 	}
-	[managedObjectContext_ save:nil];
-	[self.tabel reloadData];
-
+	
+	//获取应用程序沙盒的Documents目录  
+	NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);  
+	NSString *plistPath1 = [paths objectAtIndex:0]; 
+	//得到完整的文件名  
+	NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];  
+	
+	
+	//读出来看看  
+	data1 = [[NSDictionary alloc] initWithContentsOfFile:filename];  
+	NSMutableArray *aa = [[NSMutableArray alloc]init];
+	for (NSString *s in data1) {
+		if (![s isEqualToString:@"c_key"]) {
+			[aa addObject:s];
+			NSLog(@"ddd:%@",s);
+		}
+	}
+	
+	self.dataSource = aa;
+	//[self searchData];
 }
+
+- (void)loadDa{
+	//获取应用程序沙盒的Documents目录  
+	NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);  
+	NSString *plistPath1 = [paths objectAtIndex:0]; 
+	//得到完整的文件名  
+	NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];  
+	
+	
+	//读出来看看  
+	data1 = [[NSDictionary alloc] initWithContentsOfFile:filename];  
+	NSMutableArray *aa = [[NSMutableArray alloc]init];
+	for (NSString *s in data1) {
+		if (![s isEqualToString:@"c_key"]) {
+			[aa addObject:s];
+			NSLog(@"ddd:%@",s);
+		}
+		
+	}
+	
+	self.dataSource = aa;
+	[tabel reloadData];
+}
+
 
 - (void)viewDidUnload
 {
@@ -119,6 +107,8 @@
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
+- (void)deleteCollect:(id)sender{}
+#pragma marked TableViewDelegate
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
 	return 1;
@@ -133,23 +123,40 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
 	NSInteger r = [indexPath row];
-	Collect *collect = (Collect*)[dataSource_ objectAtIndex:r];
-	UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"Collect"];
-	if (cell == nil) {
-		cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"Collect"];
-	}
-	cell.textLabel.text = collect.caption;
-	cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+	NSString *da = [dataSource_ objectAtIndex:r];NSLog(@"rrr:%@",da);
+	NSDictionary *d = [data1 objectForKey:da];
+	SPCell *cell = (SPCell *)[tableView dequeueReusableCellWithIdentifier:@"SPCell"];
+	if (!cell) {
+		cell = [[[SPCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SPCell"]autorelease];
+		UIImageView*o = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"sp.png"]];
+		o.frame = CGRectMake(0,-1,65,70);
+		[cell addSubview:o];
+		
+	}	
+	SPHotData *h = [[SPHotData alloc]init];
+	h.s_caption = [d objectForKey:@"caption"];
+	h.s_description = [d objectForKey:@"content"];
+	h.s_popularity = [d objectForKey:@"indate"];
+	[cell setHotData:h];
 	return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath{
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	NSInteger r = [indexPath row];
-	Collect *collect = (Collect*)[dataSource_ objectAtIndex:r];
+	NSString *da = [dataSource_ objectAtIndex:r];
+	NSDictionary *d = [data1 objectForKey:da];
+	
 	SPShowInfoViewController *viewCon = [[SPShowInfoViewController alloc]init];
-	[viewCon setCollect:collect];
+	[viewCon setCollect:d];
+	[viewCon setButtonHidden];
 	[self.navigationController pushViewController:viewCon animated:YES];
 	[viewCon release];
 }
+
+-(CGFloat)tableView:(UITableView *)tableViews heightForRowAtIndexPath:(NSIndexPath *)indexPath  
+{
+    return 70;
+}
+
 @end

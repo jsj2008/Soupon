@@ -2,7 +2,7 @@
 //  SPFourthViewController.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-11.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
 //
 
@@ -10,6 +10,7 @@
 #import "SPLoginViewController.h"
 #import "SPCommon.h"
 #import "SPCollectViewController.h"
+#import "SPStoresViewController.h"
 
 @interface SPFourthViewController ()
 
@@ -140,11 +141,12 @@
 			[self presentModalViewController:loginCon animated:YES];
 			return;
 		}
-		if (conC ==  nil) {
-			conC = [[SPCollectViewController alloc]init];
+		
+		if (conCstore ==  nil) {
+			conCstore= [[SPStoresViewController alloc]init];
 		}
-		else{[conC searchData];}
-		[self.navigationController pushViewController:conC animated:YES];
+		else{[conCstore loadDa];}
+		[self.navigationController pushViewController:conCstore animated:YES];
 		return;
 	}else if (sender == myAttention) {
 		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
@@ -155,8 +157,7 @@
 		if (conC ==  nil) {
 			conC = [[SPCollectViewController alloc]init];
 		}
-		else{[conC searchData];}
-		//[conC searchData];
+		else{[conC loadDa];}
 		[self.navigationController pushViewController:conC animated:YES];
 		return;
 	}

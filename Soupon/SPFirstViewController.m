@@ -2,9 +2,9 @@
 //  SPFirstViewController.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-11.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
-//
+//  第一个界面，包括滚动广告，热门优惠信息
 
 #import "SPFirstViewController.h"
 #import "Status.h"
@@ -49,7 +49,45 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+	
+	
+    
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:@"everLaunched"]) {  
+		[[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"everLaunched"];  
+		[[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"firstLaunch"]; 
+		
+		NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"plistdemo" ofType:@"plist"];  
+		NSMutableDictionary *data = [[NSMutableDictionary alloc] initWithContentsOfFile:plistPath];  NSLog(@"%@", data);  
+		//添加一项内容  
+		[data setObject:@"add some content" forKey:@"c_key"];  
+		
+		//获取应用程序沙盒的Documents目录  
+		NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);  
+		NSString *plistPath1 = [paths objectAtIndex:0];  
+		
+		//得到完整的文件名  
+		NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];
+		NSString *filename2=[plistPath1 stringByAppendingPathComponent:@"store.plist"];
+		NSFileManager* fm = [NSFileManager defaultManager];
+		[fm createFileAtPath:filename contents:(NSData*)data attributes:nil];
+		[fm createFileAtPath:filename2 contents:(NSData*)data attributes:nil];
+		data = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
+		
+		//输入写入  
+		[data writeToFile:filename atomically:YES];  
+		[data writeToFile:filename2 atomically:YES]; 
+		//那怎么证明我的数据写入了呢？读出来看看  
+		NSMutableDictionary *data1 = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
+		NSLog(@"%@", data1);  
+	}  
+	else{  
+		[[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"firstLaunch"];  
+	}
+	
+	
 	pageNum = 10;
+	
+	//TableViewCell中图片的异步加载管理
 	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
 	NSString* cacheDirectory = [NSHomeDirectory() stringByAppendingString:@"/Library/Caches/imgcache/flickr/"];
 	HJMOFileCache* fileCache = [[[HJMOFileCache alloc] initWithRootPath:cacheDirectory] autorelease];
@@ -59,6 +97,7 @@
 	fileCache.fileAgeLimit = 60*60*24*7; //1 week
 	[fileCache trimCacheUsingBackgroundThread];
 	
+	
 	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 130, 320, 238)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
@@ -66,22 +105,23 @@
 	[self.view addSubview:tabelView];
 	manager = [SDWebImageManager sharedManager];
 	
+	//对接口返回数据进行转码
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
 	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
-	NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
+	
 	NSString *citysString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:GETCITYS] usedEncoding:&encode error:nil];
-	NSLog(@"city:%@",citysString);
+
 	cityArray = [[SPCommon parserXML:citysString type:xGetcitys]copy];
 	SPCityData *b = (SPCityData*)[cityArray objectAtIndex:0];
 	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked:)];
 	
 	if (![hotstring isEqualToString:@""]) {
 		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
-		//[hotArray addObjectsFromArray:dataSorce];
 	}else {
 		NSLog(@"error");
 	}
-	if (![adsString isEqualToString:@""]) {
+	if (1) {
+		NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
 		adsArray = [[SPCommon parserXML:adsString type:xAds]copy];
 	}else {
 		NSLog(@"error");
@@ -91,18 +131,18 @@
 		CGRect mainRect = self.view.frame;
 		mainRect.size.height = ScreenHeight;
 		self.view.frame = mainRect;
-		
-		//CGRect rect = tabelView.frame;
+	
 		CGRect r = CGRectMake(0, 130, 320, 326);
-		//rect.origin.y = MainHeight- rect.size.height-176;
 		tabelView.frame = r;
 	}
 	
+	//滚动视图
 	pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,130) withDataSource:self];
     [self.view addSubview:pagePhotosView];
     [pagePhotosView release];
 }
 
+//城市选择按钮的触发事件
 - (IBAction)leftItemClicked:(id)sender{
 	UITableViewController *controller = [[UITableViewController alloc]init];
 	controller.tableView.delegate =self;
@@ -145,18 +185,18 @@
 	return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 }
 
-// 有多少页
+// 滚动视图有多少页
 - (int)numberOfPages{
 	return [adsArray count];
 }
 
-// 每页的图片
+// 滚地视图每页的图片
 - (UIImage *)imageAtIndex:(int)index{
 	SPAdsData *ad =  [adsArray objectAtIndex:index];
 	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,ad.s_adName];
 	
 	UIImage *cachedImage = [manager imageWithURL:[NSURL URLWithString:urlStirng]]; 
-	//NSLog(@"u;%@----%@,%d",urlStirng,ad.s_adName,index);
+
 	// 将需要缓存的图片加载进来 
 	if(cachedImage) { 
 		return cachedImage;
@@ -191,7 +231,7 @@
     [self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:NO];
     [pool release];
 }
-
+//刷新
 - (void)refresh{
 	//[hotArray removeAllObjects];
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
@@ -204,6 +244,7 @@
 	//[tabelView reloadData:YES];
 }
 
+//加载
 - (void)loadMore{
 	//[hotArray removeAllObjects];
 	pageNum += pageNum;
@@ -266,9 +307,9 @@
 
 		SPHotData *b = (SPHotData*)[hotArray objectAtIndex:indexPath.row];
 		NSString *s = [NSString stringWithFormat:@"%@%@",SHOWINFO,b.s_hotid];
-		NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-		NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
-		NSLog(@"%@",hotstring);
+		//NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+		//NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
+		//NSLog(@"%@",hotstring);
 		[con setAll:s];
 		[self.navigationController pushViewController:con animated:YES];
 	}

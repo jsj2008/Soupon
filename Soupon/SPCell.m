@@ -2,9 +2,9 @@
 //  SPCell.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-12.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
-//
+//  每一行优惠信息的model类
 
 #import "SPCell.h"
 #import "SPCommon.h"

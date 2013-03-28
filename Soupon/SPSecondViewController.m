@@ -2,9 +2,9 @@
 //  SPSecondViewController.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-11.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
-//
+//	第二个页面，包括优惠信息列表，根据条件进行搜索实现
 
 #import "SPSecondViewController.h"
 #import "SPCell.h"

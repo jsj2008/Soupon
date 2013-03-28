@@ -2,7 +2,7 @@
 //  SPThirdViewController.m
 //  Soupon
 //
-//  Created by rjxy rjxy on 13-3-11.
+//  Created by Yuan on 13-3-11.
 //  Copyright (c) 2013年 __MyCompanyName__. All rights reserved.
 //
 
@@ -208,14 +208,39 @@
 }
 
 - (IBAction)attention:(id)sender{
-
+	//获取应用程序沙盒的Documents目录  
+	NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);  
+	NSString *plistPath1 = [paths objectAtIndex:0];  
+	
+	//得到完整的文件名  
+	NSString *filename=[plistPath1 stringByAppendingPathComponent:@"store.plist"];  
+	NSMutableDictionary *data = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
+	if(data == nil)
+	{
+		//1. 创建一个plist文件 
+		NSFileManager* fm = [NSFileManager defaultManager];
+		[fm createFileAtPath:filename contents:nil attributes:nil];        
+	}
+	NSDictionary *dic = [[NSDictionary alloc]initWithObjectsAndKeys:h.s_caption,@"caption",h.s_districtcaption,@"content",h.s_distance,@"indate", nil];
+	[data setObject:dic forKey:h.s_caption]; 
+	//输入写入  
+	[data writeToFile:filename atomically:YES];  
+	
+	//那怎么证明我的数据写入了呢？读出来看看  
+	NSMutableDictionary *data1 = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
+	NSLog(@"%@", data1);
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"收藏成功" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
+	[alert show];
+	[alert release];
+	[self hide:nil];
 }
 
 
 - (IBAction)favorable:(id)sender{
 	[self.alertView removeFromSuperview];
 
-	SPAroundInfo *h = (SPAroundInfo*)[aroundArray objectAtIndex:y];
+	h = (SPAroundInfo*)[aroundArray objectAtIndex:y];
 	NSUserDefaults *aDe = [NSUserDefaults standardUserDefaults];
 	[aDe setObject:h.s_categoryid forKey:@"cid"];
 	[aDe setObject:h.s_districtid forKey:@"diid"];
@@ -250,7 +275,7 @@
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	y = indexPath.row;
 	[self.view addSubview:alertView];
-	SPAroundInfo *h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
+	h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
 	self.storeName.text = h.s_caption;
 	[UIView animateWithDuration:0.2 animations:
      ^(void){
@@ -275,6 +300,8 @@
 		cell = [[[SPCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SPCell"]autorelease];
 		mi = [[[HJManagedImageV alloc] initWithFrame:CGRectMake(2,1.5,65,70)] autorelease];
 		mi.tag = 999;
+		
+		
 		[cell addSubview:mi];
 		
 	}
@@ -283,7 +310,7 @@
 		mi = (HJManagedImageV*)[cell viewWithTag:999];
 		[mi clear];
 	}
-	SPAroundInfo *h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
+	h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
 	[cell setAroundData:h];
 	cell.selectionStyle = UITableViewCellSelectionStyleGray;
 	
