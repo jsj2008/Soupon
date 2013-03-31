@@ -9,8 +9,12 @@
 #import "SPStoresViewController.h"
 #import "SPCell.h"
 #import "Status.h"
+#import <QuartzCore/QuartzCore.h>
 
-@interface SPStoresViewController ()
+@interface SPStoresViewController (){
+	int y;
+	NSIndexPath *x;
+}
 
 @end
 
@@ -32,13 +36,24 @@
     return self;
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+
+	[self.navigationController setNavigationBarHidden:NO];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	
+	self.alertView.frame = CGRectMake(25, 80, 270, 182);
+	self.alertView.layer.borderWidth = 5.0f;
+	self.alertView.layer.borderColor = [[UIColor lightGrayColor]CGColor];
+	self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0.6, 0.6);
+	
 	tabel = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, 320, 416) style:UITableViewStylePlain];
 	tabel.delegate = self;
 	tabel.dataSource  =self;
+	
 	[self.view addSubview:tabel];
 	if (isIPhone5) {
 		CGRect mainRect = self.view.frame;  
@@ -97,9 +112,85 @@
 	[tabel reloadData];
 }
 
+- (void)bounceOutAnimationStoped
+{
+    [UIView animateWithDuration:0.1 animations:
+     ^(void){
+         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,0.9, 0.9);
+         self.alertView.alpha = 0.8;
+     }
+                     completion:^(BOOL finished){
+                         [self bounceInAnimationStoped];
+                     }];
+}
+- (void)bounceInAnimationStoped
+{
+    [UIView animateWithDuration:0.1 animations:
+     ^(void){
+         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,1, 1);
+         self.alertView.alpha = 1.0;
+     }
+                     completion:^(BOOL finished){
+                         [self animationStoped];
+                     }];
+}
+
+
+- (void)animationStoped
+{
+    
+}
+
+- (IBAction)hide:(id)sender{
+	[self.alertView removeFromSuperview];
+    self.alertView.alpha = 0;
+	self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,0.6, 0.6);
+}
+
+- (IBAction)attention:(id)sender{
+	[dataSource_ removeObjectAtIndex:y];
+	[tabel reloadData];
+	
+	//获取应用程序沙盒的Documents目录
+	NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+	NSString *plistPath1 = [paths objectAtIndex:0];
+	
+	//得到完整的文件名
+	NSString *filename=[plistPath1 stringByAppendingPathComponent:@"store.plist"];
+	NSMutableDictionary *plist = [NSMutableDictionary dictionaryWithContentsOfFile:filename];
+	[plist removeObjectForKey:[dataSource_ objectAtIndex:y]];
+	[plist writeToFile:filename atomically:YES];
+	[self hide:nil];
+}
+
+- (IBAction)favorable:(id)sender{
+	[self.alertView removeFromSuperview];
+	NSString *da = [dataSource_ objectAtIndex:y];
+	NSDictionary *d = [data1 objectForKey:da];
+	
+	NSUserDefaults *aDe = [NSUserDefaults standardUserDefaults];
+	[aDe setObject:[d objectForKey:@"cid"] forKey:@"cid"];
+	[aDe setObject:[d objectForKey:@"diid"] forKey:@"diid"];
+	[aDe setObject:[d objectForKey:@"bid"] forKey:@"bid"];
+	[aDe setObject:[d objectForKey:@"c"] forKey:@"c"];
+	[aDe setObject:[d objectForKey:@"d"] forKey:@"d"];
+	[aDe setObject:[d objectForKey:@"b"] forKey:@"b"];
+	[aDe setBool:YES forKey:@"show"];
+	[aDe synchronize];
+	
+
+	
+	[self.navigationController popViewControllerAnimated:YES];
+	
+}
+
+
+
 
 - (void)viewDidUnload
 {
+    [self setAlertView:nil];
+	[self setStoreName:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -109,8 +200,51 @@
 {
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
+#pragma marked AlertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+	switch ((long)buttonIndex) {
+		case 1:
+			[self attention:nil];
+			break;
+		case 2:
+			[self favorable:nil];
+			break;
+			
+		default:
+			break;
+	}
+}
+#pragma marked TabelViewDelegate
 
-#pragma marked TableViewDelegate
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+	y = indexPath.row;
+	x = indexPath;
+	NSInteger r = [indexPath row];
+	NSString *da = [dataSource_ objectAtIndex:r];NSLog(@"rrr:%@",da);
+	NSDictionary *d = [data1 objectForKey:da];
+	SPHotData *h = [[SPHotData alloc]init];
+	h.s_caption = [d objectForKey:@"caption"];
+	
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"欢迎位临" message:h.s_caption delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"取消关注",@"店内优惠", nil];
+	
+	[alert show];
+	[alert release];
+
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if( (0 == indexPath.section) && (indexPath.row != [dataSource_ count]) ){
+		return UITableViewCellEditingStyleDelete;
+    }else{
+        return UITableViewCellEditingStyleNone;
+    }
+}
+	
+
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
 	return 1;
@@ -146,16 +280,18 @@
 	return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-	[tableView deselectRowAtIndexPath:indexPath animated:YES];
-	//NSInteger r = [indexPath row];
-	//NSString *da = [dataSource_ objectAtIndex:r];
-	//NSDictionary *d = [data1 objectForKey:da];
 
-}
 
 -(CGFloat)tableView:(UITableView *)tableViews heightForRowAtIndexPath:(NSIndexPath *)indexPath  
 {
     return 70;
+}
+
+
+
+- (void)dealloc {
+    [_alertView release];
+	[_storeName release];
+    [super dealloc];
 }
 @end

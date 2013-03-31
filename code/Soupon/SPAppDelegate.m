@@ -53,7 +53,8 @@
 
 	UIImageView * i = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"hot_bar_bg.png"]] autorelease];
 	i.frame = CGRectMake(0, 0, 320, 44);
-	[self.navController.navigationBar insertSubview:i atIndex:1];
+	//[self.navController.navigationBar insertSubview:i atIndex:1];
+	[self.navController.navigationBar setBackgroundImage:i.image forBarMetrics:UIBarMetricsDefault];
 	
 	self.window.rootViewController = self.navController;
 	

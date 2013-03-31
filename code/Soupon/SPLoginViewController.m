@@ -198,8 +198,15 @@
 	NSInteger purple = [[self.view subviews]indexOfObject:self.fView];
 	NSInteger maroon = [[self.view subviews] indexOfObject:self.reView];
 	[self.view exchangeSubviewAtIndex:purple withSubviewAtIndex:maroon];
-	[self.reView setHidden:NO];
-	[self.fView setHidden:YES];
+
+	
+	if (!self.reView.hidden) {
+		[self.reView setHidden:YES];
+		[self.fView setHidden:NO];
+	}else{
+		[self.reView setHidden:NO];
+		[self.fView setHidden:YES];
+	}
     
 	[UIView commitAnimations];
     

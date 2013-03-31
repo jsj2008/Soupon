@@ -45,6 +45,7 @@
 }
 
 -(void)viewWillAppear:(BOOL)animated{
+	[self.navigationController setNavigationBarHidden:NO];
 	[self.tabBarController.navigationItem setLeftBarButtonItem:nil];
 	[self.tabBarController.navigationItem setRightBarButtonItem:rightItem];
 	self.tabBarController.title = @"周边优惠";
@@ -61,9 +62,9 @@
 	self.alertView.layer.borderColor = [[UIColor lightGrayColor]CGColor];
 	self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0.6, 0.6);
 	
-	locManager = [[CLLocationManager alloc]init]; 
-    [locManager setDelegate:self]; 
-    [locManager setDesiredAccuracy:kCLLocationAccuracyBest];    
+	locManager = [[CLLocationManager alloc]init];
+    [locManager setDelegate:self];
+    [locManager setDesiredAccuracy:kCLLocationAccuracyBest];
     [locManager startUpdatingLocation];
 	
 	objMan = [[HJObjManager alloc] initWithLoadingBufferSize:6 memCacheSize:20];
@@ -80,15 +81,16 @@
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
 	[self.view addSubview:tabelView];
-	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
-	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SEARCHAROUND] usedEncoding:&encode error:nil];
-	NSLog(@"ho,%@",ss);
-	if (![hotstring isEqualToString:@""]) {
-		aroundArray = [[SPCommon parserXML:hotstring type:xSearcharound]copy];
-	}else {
-		NSLog(@"error");
-	}
+	//NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	//NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
+	//NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:SEARCHAROUND] usedEncoding:&encode error:nil];
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:SEARCHAROUND]];
+	
+	[request setDelegate:self];
+	
+	[request startAsynchronous];
+
+
 	if (isIPhone5) {
 		CGRect mainRect = self.view.frame;
 		mainRect.size.height = ScreenHeight;
@@ -105,24 +107,50 @@
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
+-(void)requestFinished:(ASIHTTPRequest
+						*)request
+
+{
+	//Use when fetching text data
+	NSLog(@"Success");
+	NSString *responseString = [request responseString];
+	if (![responseString isEqualToString:@""]) {
+		aroundArray = [[SPCommon parserXML:responseString type:xSearcharound]copy];
+		[tabelView reloadData:YES];
+	}else {
+		NSLog(@"error");
+	}
+}
+
+-(void)requestFailed:(ASIHTTPRequest
+					  *)request{
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"获取数据失败，请稍后重试。" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+	[alert show];
+	[alert release];
+}
+
 - (void)rightItemClicked{
+	
 	[locManager startUpdatingHeading];
 	[tabelView reloadData:YES];
+	
 }
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
     CLLocationCoordinate2D loc = [newLocation coordinate];
     lat =[NSString stringWithFormat:@"%f",loc.latitude];//get latitude
     lon =[NSString stringWithFormat:@"%f",loc.longitude];//get longitude  
-	
-	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
-	//NSLog(@"ss:%@",ss);
-	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ss] usedEncoding:&encode error:nil];
-	if (![hotstring isEqualToString:@""]) {
-		aroundArray = [[SPCommon parserXML:hotstring type:xSearcharound]copy];
-	}else {
-		NSLog(@"error");
-	}
+	locURLString = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
+	NSLog(@"sss%@",locURLString);
+//	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+//	NSString *ss = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=%@&y=%@&begin=0&max=10",lon,lat];
+//	NSLog(@"ss:%@",ss);
+//	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ss] usedEncoding:&encode error:nil];
+//	if (![hotstring isEqualToString:@""]) {
+//		//aroundArray = [[SPCommon parserXML:hotstring type:xSearcharound]copy];
+//	}else {
+//		NSLog(@"error");
+//	}
 	[manager stopUpdatingLocation];
     NSLog(@"%@ %@",lat,lon);
 }
@@ -165,7 +193,7 @@
 - (void)updateTableView{
     if (5) {
         //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
-        [tabelView reloadData:NO];
+        [tabelView reloadData:YES];
     } else {
         //  一定要调用本方法，否则下拉/上拖视图的状态不会还原，会一直转菊花
         [tabelView reloadData:YES];
@@ -221,7 +249,15 @@
 		NSFileManager* fm = [NSFileManager defaultManager];
 		[fm createFileAtPath:filename contents:nil attributes:nil];        
 	}
-	NSDictionary *dic = [[NSDictionary alloc]initWithObjectsAndKeys:h.s_caption,@"caption",h.s_districtcaption,@"content",h.s_distance,@"indate", nil];
+	NSDictionary *dic = [[NSDictionary alloc]initWithObjectsAndKeys:h.s_caption,@"caption",
+																	h.s_districtcaption,@"content",
+																	h.s_distance,@"indate",
+																    h.s_categoryid,@"cid",
+																	h.s_districtid,@"diid",
+																	h.s_brandid,@"bid",
+																	h.s_categorycaption,@"c",
+																	h.s_districtcaption,@"d",
+																	h.s_brandcaption,@"b",nil];
 	[data setObject:dic forKey:h.s_caption]; 
 	//输入写入  
 	[data writeToFile:filename atomically:YES];  
@@ -270,24 +306,44 @@
         [NSThread detachNewThreadSelector:@selector(updateThread:) toTarget:self withObject:key];
     }
 }
-
+#pragma marked AlertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+	switch ((long)buttonIndex) {
+		case 1:
+			[self attention:nil];
+			break;
+		case 2:
+			[self favorable:nil];
+			break;
+			
+		default:
+			break;
+	}
+}
 #pragma marked TabelViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	y = indexPath.row;
-	[self.view addSubview:alertView];
 	h = (SPAroundInfo*)[aroundArray objectAtIndex:indexPath.row];
-	self.storeName.text = h.s_caption;
-	[UIView animateWithDuration:0.2 animations:
-     ^(void){
-		 
-         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,1.1f, 1.1f);
-         self.alertView.alpha = 0.5;
-	 }
-                     completion:^(BOOL finished){
-                         [self bounceOutAnimationStoped];
-                     }];
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"欢迎位临" message:h.s_caption delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"关注店铺",@"店内优惠", nil];
+	
+	[alert show];
+	[alert release];
+	
+//	self.storeName.text = h.s_caption;
+//	[UIView animateWithDuration:0.2 animations:
+//     ^(void){
+//		 
+//         self.alertView.transform = CGAffineTransformScale(CGAffineTransformIdentity,1.1f, 1.1f);
+//         self.alertView.alpha = 0.5;
+//	 }
+//                     completion:^(BOOL finished){
+//                         [self bounceOutAnimationStoped];
+//                     }];
 }
+
+
 
 - (NSInteger )tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
 	return [aroundArray count];

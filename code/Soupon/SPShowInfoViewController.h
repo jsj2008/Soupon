@@ -13,6 +13,7 @@
 #import "SDWebImageManager.h"
 #import "UIImageView+WebCache.h"
 #import "SPShowInfoViewController.h"
+#import "ASIHTTPRequest.h"
 
 @interface SPShowInfoViewController : UIViewController<UIApplicationDelegate,NSXMLParserDelegate,SDWebImageManagerDelegate>
 {
@@ -26,6 +27,8 @@
 @property (retain, nonatomic) IBOutlet UIImageView *theImageView;
 @property (retain, nonatomic) IBOutlet UILabel *lineDateLabel;
 @property (retain, nonatomic) IBOutlet UIButton *cellectButton;
+@property (retain, nonatomic) IBOutlet UILabel *label1;
+@property (retain, nonatomic) IBOutlet UILabel *label2;
 
 @property (nonatomic,retain) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic,retain) NSPersistentStoreCoordinator * persistentStoreCoordinator;

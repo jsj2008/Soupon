@@ -14,8 +14,10 @@
 #import "PullToRefreshTableView.h"
 #import "SPCell.h"
 #import<CoreLocation/CoreLocation.h>
+#import "ASIHTTPRequest.h"
 
-@interface SPThirdViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,CLLocationManagerDelegate>{
+
+@interface SPThirdViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,CLLocationManagerDelegate,UIAlertViewDelegate>{
 	UIBarButtonItem *rightItem;
 	NSArray *aroundArray;
 	HJObjManager* objMan;
@@ -23,6 +25,7 @@
 	NSString *lon;
 	NSString *lat;
 	SPAroundInfo *h;
+	NSString *locURLString;
 }
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPAroundInfo *cityData;

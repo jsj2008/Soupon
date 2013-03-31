@@ -48,6 +48,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated{
+	[self.navigationController setNavigationBarHidden:NO];
 	[self.tabBarController.navigationItem setLeftBarButtonItem:nil];
 	[self.tabBarController.navigationItem setRightBarButtonItem:rightItem];
 	self.tabBarController.title = @"优惠搜索";
@@ -57,16 +58,27 @@
 		cl =[[aDe objectForKey:@"cid"]intValue];
 		br =[[aDe objectForKey:@"bid"]intValue];
 		bu =[[aDe objectForKey:@"diid"]intValue];
-		classifyButton.titleLabel.text = [aDe objectForKey:@"c"];
-		businessButton.titleLabel.text = [aDe objectForKey:@"d"];
-		brandButton.titleLabel.text = [aDe objectForKey:@"b"];
+		
+		if ([aDe objectForKey:@"c"]== nil) {
+			
+		}else{classifyButton.titleLabel.text = [aDe objectForKey:@"c"];}
+		if ([aDe objectForKey:@"d"]==nil) {}
+		else{
+			businessButton.titleLabel.text = [aDe objectForKey:@"d"];
+		}
+		if ([aDe objectForKey:@"b" ]==nil) {}
+		else{
+			brandButton.titleLabel.text = [aDe objectForKey:@"b"];
+		}
+		
+		
 		NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/couponlist.aspx?category=%d&brand=%d&district=%d&begin=0&max=10",cl,br,bu];
-		NSLog(@"sss%@",s);
-		NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-		NSString *caString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
-		NSLog(@"%@",caString);
-		searchArray = [[SPCommon parserXML:caString type:xHotlist]copy];
-		[tabelView reloadData:YES];
+		NSLog(@"dasd:%@",s);
+		ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s]];
+		
+		[request setDelegate:self];
+		
+		[request startAsynchronous];
 	}
 	
 	
@@ -74,7 +86,29 @@
 
 }
 							
+-(void)requestFinished:(ASIHTTPRequest
+						*)request
 
+{
+	//Use when fetching text data
+	NSLog(@"Success");
+	NSString *responseString = [request responseString];
+	NSLog(@"responseString:%@",responseString);
+	if (![responseString isEqualToString:@""]) {
+		searchArray = [[SPCommon parserXML:responseString type:xHotlist]copy];
+		[tabelView reloadData:YES];
+	}else {
+		NSLog(@"error");
+	}
+}
+
+-(void)requestFailed:(ASIHTTPRequest
+					  *)request{
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"获取数据失败，请稍后重试。" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+	[alert show];
+	[alert release];
+}
 
 - (void)viewDidLoad
 {
@@ -99,7 +133,7 @@
 	[fileCache trimCacheUsingBackgroundThread];
 	
 	
-	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 20, 320, 367)];
+	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 30, 320, 357)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
 	tabelView.tag = 10;
@@ -109,7 +143,7 @@
 		self.view.frame = mainRect; 
 		
 		CGRect rect = tabelView.frame;
-		CGRect r =  CGRectMake(0, 0, 320, 456);
+		CGRect r =  CGRectMake(0, 30, 320, 456);
 		rect.origin.y = MainHeight - rect.size.height;
 		tabelView.frame = r; 
 	}
@@ -149,12 +183,16 @@
 		bu = 0;
 	}
 	NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/couponlist.aspx?category=%d&brand=%d&district=%d&begin=0&max=10",cl,br,bu];
-
-	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *caString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
-	NSLog(@"%@",caString);
-	searchArray = [[SPCommon parserXML:caString type:xHotlist]copy];
-	[tabelView reloadData:YES];
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s]];
+	
+	[request setDelegate:self];
+	
+	[request startAsynchronous];
+	//NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+	//NSString *caString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
+	//NSLog(@"%@",caString);
+	//searchArray = [[SPCommon parserXML:caString type:xHotlist]copy];
+	//[tabelView reloadData:YES];
 }
 
 - (IBAction)clicked:(id)sender{
@@ -200,11 +238,11 @@
     sleep(2);
     switch ([returnKey intValue]) {
         case k_RETURN_REFRESH:
-			
+			//[self refresh];
             break;
             
         case k_RETURN_LOADMORE:
-			
+			//[self loadMore];
             break;
             
         default:
@@ -212,6 +250,27 @@
     }
     [self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:NO];
     [pool release];
+}
+//刷新
+- (void)refresh{
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:HOTLIST]];
+	
+	[request setDelegate:self];
+	
+	[request startAsynchronous];
+}
+
+//加载
+- (void)loadMore{
+	
+//	pageNum += pageNum;
+//	NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=%d&begin=0&max=%d",cityNum,pageNum];
+//	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s]];
+//	
+//	[request setDelegate:self];
+//	
+//	[request startAsynchronous];
+	
 }
 
 - (void)updateTableView{
@@ -243,6 +302,7 @@
 
 #pragma marked TabelViewDelegate
 - (void)tableView:(UITableView *)tableView1 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+	self.tabBarController.title = @"返回";
 	[tableView1 deselectRowAtIndexPath:indexPath animated:YES];
 	if (tableView1.tag == 10) {
 		if (!con) {
@@ -363,5 +423,7 @@
 	}
 	return 40;
 }
+
+
 
 @end

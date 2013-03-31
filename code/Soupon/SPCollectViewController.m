@@ -10,7 +10,11 @@
 #import "Status.h"
 #import "SPCell.h"
 
-@interface SPCollectViewController ()
+
+@interface SPCollectViewController (){
+	int y;
+
+}
 
 @end
 
@@ -29,6 +33,11 @@
         // Custom initialization
     }
     return self;
+}
+
+- (void)viewWillAppear:(BOOL)animated{
+	
+	[self.navigationController setNavigationBarHidden:NO];
 }
 
 - (void)viewDidLoad
@@ -99,6 +108,7 @@
 
 - (void)viewDidUnload
 {
+    
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -148,6 +158,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	NSInteger r = [indexPath row];
+	y = indexPath.row;
 	NSString *da = [dataSource_ objectAtIndex:r];
 	NSDictionary *d = [data1 objectForKey:da];
 	
@@ -158,9 +169,32 @@
 	[viewCon release];
 }
 
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+	[dataSource_ removeObjectAtIndex:y];
+	[tabel reloadData];
+	
+	//获取应用程序沙盒的Documents目录
+	NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+	NSString *plistPath1 = [paths objectAtIndex:0];
+	
+	//得到完整的文件名
+	NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];
+	NSMutableDictionary *plist = [NSMutableDictionary dictionaryWithContentsOfFile:filename];
+	[plist removeObjectForKey:[dataSource_ objectAtIndex:y]];
+	[plist writeToFile:filename atomically:YES];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+	// Return NO if you do not want the specified item to be editable.
+	return YES;
+}
+
 -(CGFloat)tableView:(UITableView *)tableViews heightForRowAtIndexPath:(NSIndexPath *)indexPath  
 {
     return 70;
 }
 
+- (void)dealloc {
+    [super dealloc];
+}
 @end

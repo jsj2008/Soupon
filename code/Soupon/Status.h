@@ -10,7 +10,7 @@
 #define Soupon_Status_h
 
 //主要接口
-#define HOTLIST @"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=1&begin=0&max=100"
+#define HOTLIST @"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=1&begin=0&max=10"
 #define GETIMAGE @"http://www.sltouch.com/soupon/mobile/upload/"
 #define SEARCHAROUND @"http://www.sltouch.com/soupon/mobile/nearby.aspx?x=121.29&y=31.11&begin=0&max=10"
 #define GETCITYS @"http://www.sltouch.com/soupon/mobile/citylist.aspx"

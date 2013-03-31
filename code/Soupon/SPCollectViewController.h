@@ -20,6 +20,7 @@
 @property (nonatomic,retain) NSMutableArray *dataSource;
 @property (nonatomic,retain) UITableView *tabel;
 
+
 - (void)deleteCollect:(id)sender;
 - (void)loadDa;
 @end

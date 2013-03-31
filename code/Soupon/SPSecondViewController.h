@@ -14,8 +14,9 @@
 #import "SPShowInfoViewController.h"
 #import "FPPopoverController.h"
 #import "SPAroundInfo.h"
+#import "ASIHTTPRequest.h"
 
-@interface SPSecondViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate>{
+@interface SPSecondViewController : UIViewController<UISearchBarDelegate ,UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate>{
 	UIBarButtonItem *rightItem;
 	
 	HJObjManager* objMan;
@@ -31,6 +32,8 @@
 @property (retain, nonatomic) IBOutlet UIButton *businessButton;
 @property (strong ,nonatomic) PullToRefreshTableView *tabelView;
 @property (nonatomic ,retain) SPCityData *cityData;
+@property(retain) NSMutableArray *tableData;
 
 - (IBAction)clicked:(id)sender;
+- (void)searchBar:(UISearchBar *)searchBar activate:(BOOL) active;
 @end

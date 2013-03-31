@@ -9,12 +9,14 @@
 #import <UIKit/UIKit.h>
 #import "SPCollectViewController.h"
 #import "SPStoresViewController.h"
+#import "APScrollView.h"
 
 @interface SPFourthViewController : UIViewController<UIScrollViewDelegate>
 {
 	UIPageControl *pageCon;
 	SPCollectViewController *conC;
 	SPStoresViewController *conCstore;
+	APScrollView *scrollView;
 }
 
 @property (retain, nonatomic) IBOutlet UIButton *myFavorable;

@@ -19,7 +19,7 @@
 #import "SPShowInfoViewController.h"
 #import "ASIHTTPRequest.h"
 
-@interface SPFirstViewController : UIViewController <PagePhotosDataSource,NSXMLParserDelegate,SDWebImageManagerDelegate,UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate,ASIHTTPRequestDelegate>
+@interface SPFirstViewController : UIViewController <PagePhotosDataSource,NSXMLParserDelegate,SDWebImageManagerDelegate,UITableViewDataSource,UITableViewDelegate,FPPopoverControllerDelegate,ASIHTTPRequestDelegate,ASIProgressDelegate>
 {
 	SDWebImageManager *manager;
 	UIBarButtonItem *leftItem;

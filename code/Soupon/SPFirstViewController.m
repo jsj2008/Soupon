@@ -41,6 +41,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated{
+	[self.navigationController setNavigationBarHidden:NO];
 	[self.tabBarController.navigationItem setRightBarButtonItem:nil];
 	[self.tabBarController.navigationItem setLeftBarButtonItem:leftItem];
 	self.tabBarController.title = @"环旗优惠";
@@ -49,8 +50,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	
-	
     
 	if (![[NSUserDefaults standardUserDefaults] boolForKey:@"everLaunched"]) {  
 		[[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"everLaunched"];  
@@ -100,7 +99,7 @@
 	[fileCache trimCacheUsingBackgroundThread];
 	
 	
-	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 130, 320, 238)];
+	tabelView  = [[PullToRefreshTableView alloc]initWithFrame:CGRectMake(0, 110, 320, 258)];
 	tabelView.dataSource = self;
 	tabelView.delegate = self;
 	tabelView.tag =10;
@@ -109,19 +108,23 @@
 	
 	//对接口返回数据进行转码
 	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:HOTLIST] usedEncoding:&encode error:nil];
+	
+	
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:HOTLIST]];
+	
+	[request setDelegate:self];
+	request.downloadProgressDelegate = self ;
+	[request startAsynchronous];
+	
 	
 	NSString *citysString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:GETCITYS] usedEncoding:&encode error:nil];
 
 	cityArray = [[SPCommon parserXML:citysString type:xGetcitys]copy];
 	SPCityData *b = (SPCityData*)[cityArray objectAtIndex:0];
-	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleDone target:self action:@selector(leftItemClicked:)];
+	leftItem = [[UIBarButtonItem alloc]initWithTitle:b.s_cityCaption style:UIBarButtonItemStyleBordered target:self action:@selector(leftItemClicked:)];
 	
-	if (![hotstring isEqualToString:@""]) {
-		hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
-	}else {
-		NSLog(@"error");
-	}
+
+	
 	if (1) {
 		NSString *adsString =  [NSString stringWithContentsOfURL:[NSURL URLWithString:ADS] usedEncoding:&encode error:nil];
 		adsArray = [[SPCommon parserXML:adsString type:xAds]copy];
@@ -134,15 +137,41 @@
 		mainRect.size.height = ScreenHeight;
 		self.view.frame = mainRect;
 	
-		CGRect r = CGRectMake(0, 130, 320, 326);
+		CGRect r = CGRectMake(0, 110, 320, 356);
 		tabelView.frame = r;
 	}
 	
 	//滚动视图
-	pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,130) withDataSource:self];
+	pagePhotosView = [[PagePhotosView alloc] initWithFrame: CGRectMake(0,0,320,110) withDataSource:self];
     [self.view addSubview:pagePhotosView];
     [pagePhotosView release];
 }
+- (void)request:(ASIHTTPRequest *)request didReceiveBytes:(long long)bytes{
+	NSLog(@"Receive:%lld",bytes);
+}
+-(void)requestFinished:(ASIHTTPRequest
+					   *)request
+
+{	
+	//Use when fetching text data
+	NSLog(@"Success");
+	NSString *responseString = [request responseString];
+	if (![responseString isEqualToString:@""]) {
+		hotArray = [[SPCommon parserXML:responseString type:xHotlist]copy];
+		[tabelView reloadData:YES];
+	}else {
+		NSLog(@"error");
+	}
+}
+
+-(void)requestFailed:(ASIHTTPRequest
+					 *)request{
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"获取数据失败，请稍后重试。" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+	[alert show];
+	[alert release];
+}
+
 
 //城市选择按钮的触发事件
 - (IBAction)leftItemClicked:(id)sender{
@@ -219,12 +248,12 @@
     switch ([returnKey intValue]) {
         case k_RETURN_REFRESH:
 			
-			//[self refresh];
+			[self refresh];
 			
             break;
             
         case k_RETURN_LOADMORE:
-			//[self loadMore];
+			[self loadMore];
             break;
             
         default:
@@ -235,27 +264,24 @@
 }
 //刷新
 - (void)refresh{
-	//[hotArray removeAllObjects];
-	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-	NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=%d&begin=0&max=10",cityNum];
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:HOTLIST]];
 	
-	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
-	NSLog(@"sd:%@",hotstring);
-	hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
-	//[hotArray addObjectsFromArray:dataSorce];
-	//[tabelView reloadData:YES];
+	[request setDelegate:self];
+	
+	[request startAsynchronous];
 }
 
 //加载
 - (void)loadMore{
-	//[hotArray removeAllObjects];
+
 	pageNum += pageNum;
-	NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
 	NSString *s = [NSString stringWithFormat:@"http://www.sltouch.com/soupon/mobile/hotlist.aspx?city=%d&begin=0&max=%d",cityNum,pageNum];
-	NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
-	hotArray = [[SPCommon parserXML:hotstring type:xHotlist]copy];
-	//[hotArray addObjectsFromArray:dataSorce];
-	[tabelView reloadData];
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s]];
+	
+	[request setDelegate:self];
+	
+	[request startAsynchronous];
+
 }
 
 - (void)updateTableView{
@@ -288,6 +314,7 @@
 
 #pragma marked TabelViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+	self.tabBarController.title = @"返回";
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	if (tableView.tag == 12) {
 		SPCityData *b = (SPCityData*)[cityArray objectAtIndex:indexPath.row];
@@ -309,6 +336,7 @@
 
 		SPHotData *b = (SPHotData*)[hotArray objectAtIndex:indexPath.row];
 		NSString *s = [NSString stringWithFormat:@"%@%@",SHOWINFO,b.s_hotid];
+		
 		//NSStringEncoding encode = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
 		//NSString *hotstring =  [NSString stringWithContentsOfURL:[NSURL URLWithString:s] usedEncoding:&encode error:nil];
 		//NSLog(@"%@",hotstring);

@@ -39,21 +39,41 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
 	if (self) {
-		self.title = NSLocalizedString(@"我的优惠", @"我的优惠");
+		self.title = NSLocalizedString(@"我的优惠", @"");
 		self.tabBarItem.image = [UIImage imageNamed:@"4.png"];
     }
     return self;
 }
 
 -(void)viewWillAppear:(BOOL)animated{
+	NSLog(@"ou");
+	NSUserDefaults *aDe = [NSUserDefaults standardUserDefaults];
+	if ([aDe boolForKey:@"show"]) {
+		self.tabBarController.selectedIndex = 1;
+	}
 	[self.tabBarController.navigationItem setLeftBarButtonItem:nil];
 	[self.tabBarController.navigationItem setRightBarButtonItem:nil];
+	[self.navigationController setNavigationBarHidden:YES];
 	[self.tabBarController.navigationItem setTitle:@"我的优惠"];
 }
 
 - (void)viewDidLoad
 {	
     [super viewDidLoad];
+	[self.myAttention setBackgroundImage:[UIImage imageNamed:@"mycoupon_on.png"] forState:UIControlStateNormal];
+	[self.myAttention setBackgroundImage:[UIImage imageNamed:@"mycoupon_down.png"] forState:UIControlStateHighlighted];
+	
+	[self.myFavorable setBackgroundImage:[UIImage imageNamed:@"myshop_on.png"] forState:UIControlStateNormal];
+	[self.myFavorable setBackgroundImage:[UIImage imageNamed:@"myshop_down.png"] forState:UIControlStateHighlighted];
+	
+	[self.aboutUs setBackgroundImage:[UIImage imageNamed:@"about_on.png"] forState:UIControlStateNormal];
+	[self.aboutUs setBackgroundImage:[UIImage imageNamed:@"about_down.png"] forState:UIControlStateHighlighted];
+	
+	[self.guess setBackgroundImage:[UIImage imageNamed:@"guess_on.png"] forState:UIControlStateNormal];
+	[self.guess setBackgroundImage:[UIImage imageNamed:@"guess_down.png"] forState:UIControlStateHighlighted];
+	
+	[self.nwCourse setBackgroundImage:[UIImage imageNamed:@"new_on.png"] forState:UIControlStateNormal];
+	[self.nwCourse setBackgroundImage:[UIImage imageNamed:@"new_down.png"] forState:UIControlStateHighlighted];
 	if (isIPhone5) {
 		CGRect mainRect = self.view.frame;
 		mainRect.size.height = ScreenHeight;
@@ -78,16 +98,24 @@
 - (IBAction)clicked:(id)sender{
 	UIViewController *viewCon = [[UIViewController alloc]init];
 	if (sender == aboutUs) {
+
+		[self.tabBarController.navigationItem setTitle:@"退出"];	
+		[self.navigationController setNavigationBarHidden:NO];
+		
 		UIImageView *imageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"aboutus_bg.png"]];
 		[viewCon setView:imageView];
 		[imageView release];
 	}else if (sender == guess) {
+		[self.tabBarController.navigationItem setTitle:@"退出"];
 		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
 			SPLoginViewController *loginCon = [[[SPLoginViewController alloc]init]autorelease];
 			[self presentModalViewController:loginCon animated:YES];
 			[viewCon release];
 			return;
 		}
+
+			
+		[self.navigationController setNavigationBarHidden:NO];
 		NSString *phone = [[NSUserDefaults standardUserDefaults]objectForKey:@"phone"];
 		NSURLRequest *request =[NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",@"http://www.sltouch.com/soupon/mobile/guess.aspx?phone=",phone]]];
 		
@@ -96,14 +124,19 @@
 		[viewCon setView:webView];
 		[webView release];
 	}else if (sender == nwCourse) {
+
+		[self.tabBarController.navigationItem setTitle:@"退出"];	
+		[self.navigationController setNavigationBarHidden:NO];
 		
-		UIScrollView *view = [[UIScrollView alloc]initWithFrame:CGRectMake(0,0, 320, 460)];
-		view.delegate =self;
-		view.contentSize = CGSizeMake(4*320, 0) ;
-		UIImageView *im1 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 320, 480)];
-		UIImageView *im2 = [[UIImageView alloc]initWithFrame:CGRectMake(320, 0, 320, 480)];
-		UIImageView *im3 = [[UIImageView alloc]initWithFrame:CGRectMake(640, 0, 320, 480)];
-		UIImageView *im4 = [[UIImageView alloc]initWithFrame:CGRectMake(960, 0, 320, 480)];
+		scrollView = [[APScrollView alloc]initWithFrame:CGRectMake(0, 0, 320, self.view.frame.size.height+44)];
+		
+		scrollView.contentSize = CGSizeMake(self.view.frame.size.width * 4, self.view.frame.size.height+44);
+		scrollView.pagingEnabled = YES;
+		
+		UIImageView *im1 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height+44)];
+		UIImageView *im2 = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width, 0, self.view.frame.size.width, self.view.frame.size.height+44)];
+		UIImageView *im3 = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width*2, 0, self.view.frame.size.width,self.view.frame.size.height+44)];
+		UIImageView *im4 = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width*3, 0, self.view.frame.size.width, self.view.frame.size.height+44)];
 		if (isIPhone5) {
 			[im1 setFrame:CGRectMake(0, 0, 320, 504)];
 			[im2 setFrame:CGRectMake(320, 0, 320, 504)];
@@ -118,23 +151,18 @@
 		[im4 setImage:[UIImage imageNamed:@"help_4.png"]];
 		
 		
-		pageCon = [[UIPageControl alloc]init];
-		pageCon.frame = CGRectMake(140, 400, 40, 30);
-		pageCon.numberOfPages = 4;
-		[pageCon updateCurrentPageDisplay];
-		[view addSubview:pageCon];
-		[view addSubview:im1];
-		[view addSubview:im2];
-		[view addSubview:im3];
-		[view addSubview:im4];
+		
+		[scrollView addSubview:im1];
+		[scrollView addSubview:im2];
+		[scrollView addSubview:im3];
+		[scrollView addSubview:im4];
 		
 		
 		[im1 release];
 		[im2 release];
 		[im3 release];
 		[im4 release];
-		[pageCon release];
-		[viewCon setView:view];
+		[viewCon setView:scrollView];
 		
 	}else if (sender == myFavorable){
 		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
@@ -152,6 +180,7 @@
 		[viewCon release];
 		return;
 	}else if (sender == myAttention) {
+		//myAttention.selected = !myAttention.selected;
 		if (![[NSUserDefaults standardUserDefaults]objectForKey:@"phone"]) {
 			SPLoginViewController *loginCon = [[[SPLoginViewController alloc]init]autorelease];
 			[self presentModalViewController:loginCon animated:YES];
@@ -171,11 +200,11 @@
 	[viewCon release];
 }
 
--(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    
-    int page =scrollView.bounds.origin.x/160;
-    [pageCon setCurrentPage:page];
-}
+//-(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+//    
+//    int page =scrollView.bounds.origin.x/160;
+//    [pageCon setCurrentPage:page];
+//}
 
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

@@ -134,8 +134,6 @@
 	return dataArray;
 }
 
-
-
 + (NSMutableArray *)parserKeySearchXML:(NSString *)dataString type:(KeySearchType)type{
 	NSMutableArray *dataArray = [[[NSMutableArray alloc]init]autorelease];
 	TBXML *tbXml = [TBXML tbxmlWithXMLString:dataString];
@@ -149,6 +147,22 @@
 	}
 
 	return dataArray;
+}
+
++ (BOOL)check:(NSString *)string{
+	//获取应用程序沙盒的Documents目录
+	NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+	NSString *plistPath1 = [paths objectAtIndex:0];
+	//得到完整的文件名
+	NSString *filename=[plistPath1 stringByAppendingPathComponent:@"test.plist"];
+
+	//读出来看看
+	NSDictionary* data1 = [[NSDictionary alloc] initWithContentsOfFile:filename];
+	
+	for (NSString *s in data1) {
+		if ([s isEqualToString:string]) return YES;
+	}
+	return NO;
 }
 
 @end

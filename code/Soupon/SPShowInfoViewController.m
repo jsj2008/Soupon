@@ -37,25 +37,35 @@
 
 - (void)viewDidAppear:(BOOL)animated{
 	
-		lineDateLabel.text = [dic objectForKey:@"indate"];
-		contentTextView.text = [dic objectForKey:@"content"];
-		captionLabel.text = [dic objectForKey:@"caption"];
-	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,[dic objectForKey:@"image"]];
+
+
 	
-	UIImage *cachedImage = [manager imageWithURL:[NSURL URLWithString:urlStirng]]; 
-	
-	// 将需要缓存的图片加载进来 
-	if(cachedImage) { 
-		theImageView.image = cachedImage;
-	}  else{ 
-		// 如果Cache没有命中，则去下载指定网络位置的图片，并且给出一个委托方法          
-		[manager downloadWithURL:[NSURL URLWithString:urlStirng] delegate:self]; 
-		
-	}
+//	NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,[dic objectForKey:@"image"]];
+//	NSLog(@"url:%@",urlStirng);
+//	UIImage *cachedImage = [manager imageWithURL:[NSURL URLWithString:urlStirng]]; 
+//	
+//	// 将需要缓存的图片加载进来 
+//	if(cachedImage) { 
+//		theImageView.image = cachedImage;
+//	}  else{ 
+//		// 如果Cache没有命中，则去下载指定网络位置的图片，并且给出一个委托方法          
+//		
+//		[manager downloadWithURL:[NSURL URLWithString:urlStirng] delegate:self];
+//		
+//	}
+//	NSLog(@"dddd:%@",[dic objectForKey:@"image"]);
+//	if ([[dic objectForKey:@"image"]isEqualToString:@""]) {
+//		NSLog(@"kkkkkk");
+//		theImageView.image = [UIImage imageNamed:@"detail_image_no.png"];
+//	}else{
+//		theImageView.image = [UIImage imageNamed:@"detail_image_bg.png"];
+//		theImageView.image = cachedImage;
+//	}
 
 }
 
 - (void)imageDownloader:(SDWebImageDownloader *)downloader didFinishWithImage:(UIImage *)image{
+	NSLog(@"ok");
 		theImageView.image = image;
 }
 
@@ -63,18 +73,52 @@
 {
     [super viewDidLoad];
 	
+	[contentTextView setFont:[UIFont fontWithName:@"System" size:10.0]];
 	manager = [SDWebImageManager sharedManager];
 	//设置详细页面北京颜色
 	[self.view setBackgroundColor:InfoColor];
+	if (isIPhone5) {
+		theImageView.frame = CGRectMake(theImageView.frame.origin.x, theImageView.frame.origin.y+70, theImageView.frame.size.width, theImageView.frame.size.height);
+		self.label1.frame = CGRectMake(self.label1.frame.origin.x, self.label1.frame.origin.y+70, self.label1.frame.size.width, self.label1.frame.size.height);
+		self.label2.frame = CGRectMake(self.label2.frame.origin.x, self.label2.frame.origin.y+70, self.label2.frame.size.width, self.label2.frame.size.height);
+		self.cellectButton.frame = CGRectMake(self.cellectButton.frame.origin.x, self.cellectButton.frame.origin.y+70, self.cellectButton.frame.size.width, self.cellectButton.frame.size.height);
+		self.lineDateLabel.frame = CGRectMake(self.lineDateLabel.frame.origin.x, self.lineDateLabel.frame.origin.y+70, self.lineDateLabel.frame.size.width, self.lineDateLabel.frame.size.height);
+		self.contentTextView.frame = CGRectMake(self.contentTextView.frame.origin.x, self.contentTextView.frame.origin.y, self.contentTextView.frame.size.width, self.contentTextView.frame.size.height+60);
+		
+	}
 	
 }
 
 - (void)setAll:(NSString*)couponid{
-	NSXMLParser *parser = [[NSXMLParser alloc]initWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:couponid]]];
+	lineDateLabel.text = nil;
+	contentTextView.text = nil;
+	captionLabel.text = nil;
+	ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:couponid]];
+	
+	[request setDelegate:self];
+	
+	[request startAsynchronous];
+	
+}
+-(void)requestFinished:(ASIHTTPRequest
+						*)request
+
+{
+	//Use when fetching text data
+	NSLog(@"Success");
+	NSData *responseData = [request responseData];
+	NSXMLParser *parser = [[NSXMLParser alloc]initWithData:responseData];
 	[parser setDelegate:self];
 	[parser parse];
 }
 
+-(void)requestFailed:(ASIHTTPRequest
+					  *)request{
+	
+	UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"获取数据失败，请稍后重试。" message:nil delegate:nil cancelButtonTitle:@"知道了" otherButtonTitles:nil];
+	[alert show];
+	[alert release];
+}
 - (void)setCollect:(NSDictionary *)collect{
 	dic = collect;
 	
@@ -88,6 +132,30 @@
 	} 
 	if ([elementName isEqualToString:@"detail"]) { 
 		dic = [[NSDictionary dictionaryWithDictionary:attributeDict]copy];
+		lineDateLabel.text = [dic objectForKey:@"indate"];
+		contentTextView.text = [dic objectForKey:@"content"];
+		captionLabel.text = [dic objectForKey:@"caption"];
+		NSString *urlStirng = [NSString stringWithFormat:@"%@%@",GETIMAGE,[dic objectForKey:@"image"]];
+		NSLog(@"url:%@",urlStirng);
+		UIImage *cachedImage = [manager imageWithURL:[NSURL URLWithString:urlStirng]];
+		
+		// 将需要缓存的图片加载进来
+		if(cachedImage) {
+			theImageView.image = cachedImage;
+		}  else{
+			// 如果Cache没有命中，则去下载指定网络位置的图片，并且给出一个委托方法
+			
+			[manager downloadWithURL:[NSURL URLWithString:urlStirng] delegate:self];
+			
+		}
+		NSLog(@"dddd:%@",[dic objectForKey:@"image"]);
+		if ([[dic objectForKey:@"image"]isEqualToString:@""]) {
+			NSLog(@"kkkkkk");
+			theImageView.image = [UIImage imageNamed:@"detail_image_no.png"];
+		}else{
+			theImageView.image = [UIImage imageNamed:@"detail_image_bg.png"];
+			theImageView.image = cachedImage;
+		}
 	}
 } 
 
@@ -110,49 +178,17 @@
 			NSFileManager* fm = [NSFileManager defaultManager];
 			[fm createFileAtPath:filename contents:nil attributes:nil];        
 		}
-		
+
 		[data setObject:dic forKey:[dic objectForKey:@"caption"]]; 
 		//输入写入  
 		[data writeToFile:filename atomically:YES];  
 		[data release];
-		
-		//那怎么证明我的数据写入了呢？读出来看看  
-		//NSMutableDictionary *data1 = [[NSMutableDictionary alloc] initWithContentsOfFile:filename];  
-		//NSLog(@"%@", data1);
-		
-		
-		
-		
-//		NSString *modelPath  = [[NSBundle mainBundle]pathForResource:@"collectModel" ofType:@"momd"];
-//		NSURL *modelURL = [NSURL fileURLWithPath:modelPath];
-//		managedObjectModel = [[NSManagedObjectModel alloc]initWithContentsOfURL:modelURL];
-//		
-//		NSURL *storeURL = nil;
-//		NSError *error = nil;
-//
-//		persistentStoreCoordinator  =[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:managedObjectModel];
-//		storeURL  =[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]lastObject];
-//		storeURL = [storeURL URLByAppendingPathComponent:@"collectModel.sqlite"];
-//		[persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error];
-//		managedObjectContext = [[NSManagedObjectContext alloc]init];
-//		//NSManagedObjectContext *unused __attribute__((unused)) = managedObjectContext;
-//		[managedObjectContext setPersistentStoreCoordinator:persistentStoreCoordinator];
-//		[managedObjectContext setMergePolicy:NSOverwriteMergePolicy];
-//		
-//		NSEntityDescription *description = [NSEntityDescription entityForName:@"Collect" inManagedObjectContext:managedObjectContext];
-//		Collect *obj = [[[Collect alloc]initWithEntity:description insertIntoManagedObjectContext:nil]autorelease];
-//		obj.caption  = [dic objectForKey:@"caption"];
-//		obj.discreption = [dic objectForKey:@"content"];
-//		obj.indate = [dic objectForKey:@"indate"];
-//		obj.image = [dic objectForKey:@"image"];
-//		[managedObjectContext insertObject:obj];
-		
-		//if ([managedObjectContext save:nil]) {
-			NSLog(@"收藏成功！");
-		//}
+		NSLog(@"收藏成功！");
+
 		UIAlertView *a  = [[UIAlertView alloc]initWithTitle:@"收藏成功！" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
-		//[cellectButton setHidden:YES];
+		
 		[a show];
+
 		[a release];
 	}
 }
@@ -169,9 +205,9 @@
 	[self setLineDateLabel:nil];
 	[self setCellectButton:nil];
 	[dic release];
+	[self setLabel1:nil];
+	[self setLabel2:nil];
     [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -185,6 +221,8 @@
 	[theImageView release];
 	[lineDateLabel release];
 	[cellectButton release];
+	[_label1 release];
+	[_label2 release];
 	[super dealloc];
 }
 @end
